@@ -9,16 +9,26 @@
       margin: 0;
       padding: 20px;
       font-family: Arial, sans-serif;
+      padding-top: 100px;             /* room for fixed controls */
     }
     .container {
       max-width: 840px;
       margin: auto;
     }
-    /* Controls bar */
+    /* Fixed Controls Bar */
     .controls {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      width: 840px;
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      background: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       flex-wrap: wrap;
     }
     .controls input,
@@ -39,6 +49,25 @@
       font-size: 0.9em;
       min-width: 60px;
     }
+    /* Back to Top button */
+    #backToTop {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      width: 50px;
+      height: 50px;
+      background: #1ea7fd;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 24px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
     /* Card styling */
     .card {
       background: #fff;
@@ -50,7 +79,7 @@
     }
     .card h2 {
       margin: 0 0 8px;
-      font-size: 1.3em;           /* smaller title */
+      font-size: 1.3em;
       color: #034d66;
     }
     .card .date {
@@ -62,10 +91,10 @@
       border: 0;
       border-top: 2px solid #034d66;
       margin: 12px 0;
-      width: 100%;               /* full width inside padding */
+      width: 100%;
     }
     .card .summary {
-      display: none;             /* hidden by default */
+      display: none;
       line-height: 1.6;
       color: #333;
       margin-bottom: 20px;
@@ -90,20 +119,14 @@
     }
   </style>
   <script>
-    // track current sort order: false = descending, true = ascending
-    var sortAsc = false;
+    var sortAsc = false; // false = descending (newest first)
 
-    // parse dates in DD.MM.YYYY
-    function parseDate(str){
-      var parts = str.trim().split('.');
-      return new Date(
-        parseInt(parts[2],10),
-        parseInt(parts[1],10)-1,
-        parseInt(parts[0],10)
-      ).getTime();
+    function parseDate(str) {
+      var p = str.trim().split('.');
+      return new Date(p[2], p[1]-1, p[0]).getTime();
     }
 
-    function sortCards(asc){
+    function sortCards(asc) {
       var parent = document.querySelector('.container');
       var cards  = Array.from(document.querySelectorAll('.card'));
       cards.sort(function(a,b){
@@ -111,14 +134,12 @@
         var db = parseDate(b.querySelector('.date').innerText);
         return asc ? da - db : db - da;
       });
-      // re-append in sorted order (moves elements)
       cards.forEach(function(c){ parent.appendChild(c); });
     }
 
     function toggleSort(){
       sortAsc = !sortAsc;
-      var btn = document.getElementById('sortBtn');
-      btn.innerText = sortAsc ? '▲' : '▼';
+      document.getElementById('sortBtn').innerText = sortAsc ? '▲' : '▼';
       sortCards(sortAsc);
     }
 
@@ -144,48 +165,54 @@
         var dt  = card.querySelector('.date').innerText.trim().split('.');
         var y   = dt[2], m = dt[1];
         var so  = card.querySelector('.source a').innerText;
-        var okSearch = (t + ' ' + sum).includes(text);
-        var okYear   = !year   || y   === year;
-        var okMonth  = !month  || m   === month;
-        var okSource = !src    || so  === src;
-        card.style.display = (okSearch && okYear && okMonth && okSource)
-                              ? '' : 'none';
+        var ok = (t + ' ' + sum).includes(text)
+              && (!year   || y   === year)
+              && (!month  || m   === month)
+              && (!src    || so  === src);
+        card.style.display = ok ? '' : 'none';
       });
     }
 
     function populateFilters() {
-      var years   = new Set(), 
-          months  = new Set(), 
-          sources = new Set();
+      var years = new Set(), months = new Set(), sources = new Set();
       document.querySelectorAll('.card').forEach(function(c){
         var dt = c.querySelector('.date').innerText.trim().split('.');
-        years.add(dt[2]);
-        months.add(dt[1]);
+        years.add(dt[2]); months.add(dt[1]);
         sources.add(c.querySelector('.source a').innerText);
       });
-      Array.from(years).sort().forEach(function(y){
-        document.getElementById('yearFilter')
-                .add(new Option(y, y));
-      });
-      Array.from(months).sort().forEach(function(m){
-        document.getElementById('monthFilter')
-                .add(new Option(m, m));
-      });
-      Array.from(sources).sort().forEach(function(s){
-        document.getElementById('sourceFilter')
-                .add(new Option(s, s));
-      });
+      Array.from(years).sort().forEach(y =>
+        document.getElementById('yearFilter').add(new Option(y, y))
+      );
+      Array.from(months).sort().forEach(m =>
+        document.getElementById('monthFilter').add(new Option(m, m))
+      );
+      Array.from(sources).sort().forEach(s =>
+        document.getElementById('sourceFilter').add(new Option(s, s))
+      );
+    }
+
+    function handleScroll() {
+      var btn = document.getElementById('backToTop');
+      btn.style.display = window.pageYOffset > 300 ? 'flex' : 'none';
     }
 
     window.onload = function(){
       populateFilters();
       sortCards(sortAsc);
+      window.addEventListener('scroll', handleScroll);
+      document.getElementById('backToTop')
+              .addEventListener('click', function(){
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
     };
   </script>
 </head>
 <body>
+  <!-- Back to top button -->
+  <button id="backToTop" title="Back to top">↑</button>
+
   <div class="container">
-    <!-- Search & Filters & Sort -->
+    <!-- Fixed Search & Filters & Sort -->
     <div class="controls">
       <input id="searchInput"
              type="text"
@@ -200,8 +227,7 @@
       <select id="sourceFilter" onchange="filterArticles()">
         <option value="">All sources</option>
       </select>
-      <button id="sortBtn"
-              onclick="toggleSort()">▼</button>
+      <button id="sortBtn" onclick="toggleSort()">▼</button>
     </div>
 <div class="card">
   <h2>High demands, lifelong learning, and AI involvement. The face of modern accounting is changing rapidly</h2>
