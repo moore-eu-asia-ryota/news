@@ -3,11 +3,10 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import os
 import time
+from urllib.parse import urljoin
 
-# 1) Use the JetEngine-powered Artykuły archive URLs
+# ——— Configuration ———
 BASE_LISTING  = 'https://moorepolska.pl/artykuly/'
-PAGE_URL      = 'https://moorepolska.pl/artykuly/?jsf=jet-engine&tax=category:31&pagenum={page}'
-
 OUTPUT_DIR    = 'output'
 OUTPUT_FILE   = os.path.join(OUTPUT_DIR, 'articles.csv')
 
@@ -23,12 +22,12 @@ HEADERS = {
     'Referer': BASE_LISTING
 }
 
-# Warm up a session to pick up any cookies
+# Warm up session to pick up cookies, etc.
 session = requests.Session()
 session.headers.update(HEADERS)
 session.get(BASE_LISTING)
 
-# Month name mapping for fallback date parsing
+# For fallback Polish‐month parsing (if <time> isn’t present)
 PL_MONTHS = {
     'stycznia':'01','lutego':'02','marca':'03','kwietnia':'04',
     'maja':'05','czerwca':'06','lipca':'07','sierpnia':'08',
@@ -38,83 +37,76 @@ PL_MONTHS = {
 SOURCE_NAME = 'Moore Polska'
 
 
-def scrape_listing(page):
+def scrape_listing():
     """
-    Fetch the archive page for `page` and return a list
-    of full URLs to each article found in the <h3><a> titles.
+    Hit /artykuly/ once, pull every <h3><a href="…">…</a></h3>,
+    return a deduped list of full URLs.
     """
-    url = PAGE_URL.format(page=page)
-    resp = session.get(url)
+    resp = session.get(BASE_LISTING)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
 
+    urls = []
     seen = set()
-    links = []
-    # Each teaser title is in <h3><a href="...">...
-    for a in soup.select('h3 a[href]'):
-        full = requests.compat.urljoin(BASE_LISTING, a['href'])
+    for h3 in soup.find_all('h3'):
+        a = h3.find('a', href=True)
+        if not a:
+            continue
+        full = urljoin(BASE_LISTING, a['href'])
         if full not in seen:
             seen.add(full)
-            links.append(full)
-    return links
+            urls.append(full)
+
+    return urls
 
 
 def scrape_article(url):
     """
-    Given a single article URL, fetch it and extract:
-    - title
-    - publication date (ISO YYYY-MM-DD)
-    - content (plain text)
-    - url
-    - source
+    Given one article URL, fetch title, date, and content.
     """
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
 
-    # 1) Title
-    title_tag = soup.find('h1')
-    title = title_tag.get_text(strip=True) if title_tag else ''
+    # — Title
+    h1 = soup.find('h1')
+    title = h1.get_text(strip=True) if h1 else ''
 
-    # 2) Date: prefer <time datetime="...">, else fallback to Polish meta text
+    # — Date: prefer <time datetime="YYYY-MM-DD…"> fallback to .entry-meta text
     post_date = ''
-    time_tag = soup.find('time', attrs={'datetime': True})
-    if time_tag:
-        post_date = time_tag['datetime'][:10]
+    t = soup.find('time', attrs={'datetime': True})
+    if t:
+        post_date = t['datetime'][:10]
     else:
         meta = soup.select_one('.entry-meta, .post-meta')
         if meta:
             parts = meta.get_text(strip=True).split()
             if len(parts) >= 3:
-                day, month_pl, year = parts[0], parts[1].lower(), parts[2]
-                month = PL_MONTHS.get(month_pl, '01')
-                post_date = f"{year}-{month}-{day.zfill(2)}"
+                day, mon_pl, year = parts[0], parts[1].lower(), parts[2]
+                mon = PL_MONTHS.get(mon_pl, '01')
+                post_date = f"{year}-{mon}-{day.zfill(2)}"
 
-    # 3) Content
-    content_div = soup.select_one('div.entry-content') or soup.find('article')
-    content_lines = []
-    if content_div:
-        for block in content_div.find_all(['p', 'h2', 'h3', 'li']):
-            text = block.get_text(strip=True)
-            if text and text.lower() != 'share':
-                content_lines.append(text)
-    content = '\n\n'.join(content_lines)
+    # — Content: grab all <p>, <h2>, <h3>, <li> under .entry-content
+    cont = soup.select_one('div.entry-content')
+    lines = []
+    if cont:
+        for blk in cont.find_all(['p','h2','h3','li']):
+            txt = blk.get_text(strip=True)
+            if txt and txt.lower() != 'share':
+                lines.append(txt)
+    content = '\n\n'.join(lines)
 
     return {
-        'title': title,
+        'title':   title,
         'content': content,
         'post_date': post_date,
-        'url': url,
-        'source': SOURCE_NAME
+        'url':     url,
+        'source':  SOURCE_NAME
     }
 
 
 def load_existing():
-    """
-    Load the existing CSV into a DataFrame, ensuring
-    the correct columns exist.
-    """
-    cols = ['title', 'content', 'post_date', 'url', 'source']
+    cols = ['title','content','post_date','url','source']
     if os.path.exists(OUTPUT_FILE):
         try:
             df = pd.read_csv(OUTPUT_FILE)
@@ -129,35 +121,27 @@ def load_existing():
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+
     existing = load_existing()
-    seen_urls = set(existing['url'])
+    seen_urls = set(existing['url'].tolist())
+
     new_records = []
-
-    page = 1
-    while True:
-        urls = scrape_listing(page)
-        if not urls:
-            break
-
-        for u in urls:
-            if u in seen_urls:
-                continue
-            try:
-                rec = scrape_article(u)
-                # Only add if we got a title and content
-                if rec['title'] and rec['content']:
-                    new_records.append(rec)
-            except Exception as e:
-                print(f"Error scraping {u}: {e}")
-            time.sleep(1)
-
-        page += 1
+    for url in scrape_listing():
+        if url in seen_urls:
+            continue
+        try:
+            rec = scrape_article(url)
+            if rec['title'] and rec['content']:
+                new_records.append(rec)
+        except Exception as e:
+            print(f"Error scraping {url}: {e}")
+        time.sleep(1)
 
     if new_records:
         df_new = pd.DataFrame(new_records)
         out = pd.concat([existing, df_new], ignore_index=True)
         out.to_csv(OUTPUT_FILE, index=False)
-        print(f"Added {len(new_records)} new articles (total {len(out)}).")
+        print(f"Added {len(new_records)} articles (total {len(out)}).")
     else:
         print("No new articles found.")
 
