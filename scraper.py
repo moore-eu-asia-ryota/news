@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString, Tag
 import pandas as pd
 import os
 import time
@@ -25,10 +25,13 @@ session.headers.update(HEADERS)
 resp_init = session.get(BASE_URL)
 resp_init.raise_for_status()
 
+CZECH_MONTHS = {
+    'ledna': '01', 'února': '02', 'března': '03', 'dubna': '04',
+    'května': '05', 'června': '06', 'července': '07', 'srpna': '08',
+    'září': '09', 'října': '10', 'listopadu': '11', 'prosince': '12'
+}
+
 def scrape_listing(page):
-    """
-    Scrape the listing page for article URLs from <h5> headings.
-    """
     url = f'{BASE_URL}?page={page}'
     resp = session.get(url)
     resp.raise_for_status()
@@ -43,25 +46,41 @@ def scrape_listing(page):
 
 
 def scrape_article(url):
-    """
-    Scrape individual article page for title, content, and post_date.
-    """
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    title = soup.find('h1').get_text(strip=True) if soup.find('h1') else ''
-    content_div = soup.select_one('div.entry-content')
-    paragraphs = content_div.find_all('p') if content_div else []
-    content = '\n\n'.join(p.get_text(strip=True) for p in paragraphs)
-    date_tag = soup.find('time')
-    post_date = date_tag['datetime'] if date_tag and date_tag.has_attr('datetime') else ''
+    # Title
+    title_tag = soup.find('h1')
+    title = title_tag.get_text(strip=True) if title_tag else ''
+    # Date from <h4> element
+    date_header = soup.find('h4')
+    date_text = date_header.get_text(strip=True) if date_header else ''
+    post_date = ''
+    if date_text:
+        parts = date_text.split()
+        if len(parts) >= 3:
+            day, month_cz, year = parts[0], parts[1], parts[2]
+            month = CZECH_MONTHS.get(month_cz.lower(), '01')
+            post_date = f"{year}-{month}-{day.zfill(2)}"
+    # Content: collect siblings after date header
+    content_parts = []
+    if date_header:
+        for sib in date_header.next_siblings:
+            if isinstance(sib, Tag) and sib.name and sib.name.startswith('h'):
+                break
+            if isinstance(sib, Tag) and sib.name == 'p':
+                txt = sib.get_text(strip=True)
+                if txt:
+                    content_parts.append(txt)
+            if isinstance(sib, NavigableString):
+                txt = sib.strip()
+                if txt:
+                    content_parts.append(txt)
+    content = '\n\n'.join(content_parts)
     return title, content, post_date
 
 
 def load_existing():
-    """
-    Load existing CSV if present, else return empty DataFrame.
-    """
     if os.path.exists(OUTPUT_FILE):
         return pd.read_csv(OUTPUT_FILE)
     else:
@@ -96,8 +115,7 @@ def main():
         page += 1
 
     if new_records:
-        new_df = pd.DataFrame(new_records)
-        updated_df = pd.concat([existing_df, new_df], ignore_index=True)
+        updated_df = pd.concat([existing_df, pd.DataFrame(new_records)], ignore_index=True)
         updated_df.to_csv(OUTPUT_FILE, index=False)
         print(f'Added {len(new_records)} new articles. Total now {len(updated_df)}.')
     else:
