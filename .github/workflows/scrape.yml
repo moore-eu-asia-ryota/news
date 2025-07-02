@@ -1,0 +1,31 @@
+name: Scrape Press Releases
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # daily at midnight UTC
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 pandas
+
+      - name: Run scraper
+        run: python scraper.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: press-releases
+          path: output/articles.csv
