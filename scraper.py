@@ -1,3 +1,4 @@
+```python
 import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
 import pandas as pd
@@ -49,10 +50,8 @@ def scrape_article(url):
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    # Title
     title_tag = soup.find('h1')
     title = title_tag.get_text(strip=True) if title_tag else ''
-    # Date from <h4> element
     date_header = soup.find('h4')
     date_text = date_header.get_text(strip=True) if date_header else ''
     post_date = ''
@@ -62,7 +61,6 @@ def scrape_article(url):
             day, month_cz, year = parts[0], parts[1], parts[2]
             month = CZECH_MONTHS.get(month_cz.lower(), '01')
             post_date = f"{year}-{month}-{day.zfill(2)}"
-    # Content: collect siblings after date header
     content_parts = []
     if date_header:
         for sib in date_header.next_siblings:
@@ -81,8 +79,14 @@ def scrape_article(url):
 
 
 def load_existing():
+    """
+    Load existing CSV if present, handling empty files gracefully.
+    """
     if os.path.exists(OUTPUT_FILE):
-        return pd.read_csv(OUTPUT_FILE)
+        try:
+            return pd.read_csv(OUTPUT_FILE)
+        except pd.errors.EmptyDataError:
+            return pd.DataFrame(columns=['title', 'content', 'post_date', 'url'])
     else:
         return pd.DataFrame(columns=['title', 'content', 'post_date', 'url'])
 
