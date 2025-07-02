@@ -1,5 +1,9 @@
 name: Scrape Press Releases
 
+# Grant workflow permissions to push to the repo
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
   schedule:
@@ -12,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          persist-credentials: true
+          persist-credentials: true  # ensure GITHUB_TOKEN is used for pushes
 
       - name: Set up Python
         uses: actions/setup-python@v4
