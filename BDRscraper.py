@@ -28,44 +28,42 @@ session.get(BASE_URL)
 
 SOURCE_NAME = 'Moore BDR s.r.o.'
 
-
 def scrape_listing():
     """Fetches all article URLs from the novinky main page."""
     resp = session.get(BASE_URL)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    # Select all article links under the post-item headings
-    links = [requests.compat.urljoin(BASE_URL, a['href'])
-             for a in soup.select('.post-item h3 a[href]')]
-    # Deduplicate
+    links = []
+    # Article links are in h3 headings
+    for h3 in soup.find_all('h3'):
+        a = h3.find('a', href=True)
+        if a:
+            url = requests.compat.urljoin(BASE_URL, a['href'])
+            links.append(url)
+    # Deduplicate while preserving order
     return list(dict.fromkeys(links))
-
 
 def scrape_article(url):
     """Fetches title, content, and publication date from an individual article page."""
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    # Title
     title_tag = soup.find('h1')
     title = title_tag.get_text(strip=True) if title_tag else ''
-    # Date
     post_date = ''
     time_tag = soup.find('time')
     if time_tag and time_tag.has_attr('datetime'):
         post_date = time_tag['datetime']
-    # Content
     content_div = soup.select_one('div.entry-content')
     content_lines = []
     if content_div:
         for element in content_div.stripped_strings:
-            # Skip social links or simple labels
-            if element.lower() in ('share', 'viac', 'čítať ďalej'):
+            text = element.strip()
+            if not text or text.lower() in ('share', 'viac', 'čítať ďalej'):
                 continue
-            content_lines.append(element)
+            content_lines.append(text)
     content = '\n\n'.join(content_lines)
     return title, content, post_date
-
 
 def load_existing():
     cols = ['title', 'content', 'post_date', 'url', 'source']
@@ -79,7 +77,6 @@ def load_existing():
         except pd.errors.EmptyDataError:
             return pd.DataFrame(columns=cols)
     return pd.DataFrame(columns=cols)
-
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -112,7 +109,6 @@ def main():
         print(f"Added {len(new_records)} new articles. Total now {len(updated_df)}.")
     else:
         print("No new articles found.")
-
 
 if __name__ == '__main__':
     main()
