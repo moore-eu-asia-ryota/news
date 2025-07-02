@@ -7,11 +7,13 @@ BASE_URL = 'https://www.moore-czech.cz/tiskove-zpravy'
 OUTPUT_DIR = 'output'
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
 
+
 def scrape_listing(page):
     url = f'{BASE_URL}?page={page}'
     resp = requests.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
+    # Adjust selector if site HTML structure differs
     entries = soup.select('article.press-release')
     results = []
     for entry in entries:
@@ -22,6 +24,7 @@ def scrape_listing(page):
         post_date = date_tag['datetime'] if date_tag else None
         results.append({'url': full_url, 'post_date': post_date})
     return results
+
 
 def scrape_article(url):
     resp = requests.get(url)
@@ -34,6 +37,7 @@ def scrape_article(url):
     date_tag = soup.find('time')
     post_date = date_tag['datetime'] if date_tag else None
     return title, content, post_date
+
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
