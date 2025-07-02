@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup
 import pandas as pd
 import os
 import time
@@ -21,7 +21,7 @@ HEADERS = {
 
 session = requests.Session()
 session.headers.update(HEADERS)
-# Warm up session to get any cookies
+# Warm up session to get cookies
 resp_init = session.get(BASE_URL)
 resp_init.raise_for_status()
 
@@ -49,51 +49,42 @@ def scrape_article(url):
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
+    # Title
     title_tag = soup.find('h1')
     title = title_tag.get_text(strip=True) if title_tag else ''
+    # Date extraction
     date_header = soup.find('h4')
-    date_text = date_header.get_text(strip=True) if date_header else ''
     post_date = ''
-    if date_text:
-        parts = date_text.split()
+    if date_header:
+        parts = date_header.get_text(strip=True).split()
         if len(parts) >= 3:
-            day, month_cz, year = parts[0], parts[1], parts[2]
-            month = CZECH_MONTHS.get(month_cz.lower(), '01')
+            day, month_cz, year = parts[0], parts[1].lower(), parts[2]
+            month = CZECH_MONTHS.get(month_cz, '01')
             post_date = f"{year}-{month}-{day.zfill(2)}"
+    # Content: collect all <p> tags after date_header
     content_parts = []
     if date_header:
-        for sib in date_header.next_siblings:
-            if isinstance(sib, Tag) and sib.name and sib.name.startswith('h'):
-                break
-            if isinstance(sib, Tag) and sib.name == 'p':
-                txt = sib.get_text(strip=True)
-                if txt:
-                    content_parts.append(txt)
-            if isinstance(sib, NavigableString):
-                txt = sib.strip()
-                if txt:
-                    content_parts.append(txt)
+        for p in date_header.find_all_next('p'):
+            text = p.get_text(strip=True)
+            if text:
+                content_parts.append(text)
     content = '\n\n'.join(content_parts)
     return title, content, post_date
 
 
 def load_existing():
-    """
-    Load existing CSV if present, handling empty files gracefully.
-    """
     if os.path.exists(OUTPUT_FILE):
         try:
             return pd.read_csv(OUTPUT_FILE)
         except pd.errors.EmptyDataError:
             return pd.DataFrame(columns=['title', 'content', 'post_date', 'url'])
-    else:
-        return pd.DataFrame(columns=['title', 'content', 'post_date', 'url'])
+    return pd.DataFrame(columns=['title', 'content', 'post_date', 'url'])
 
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     existing_df = load_existing()
-    existing_urls = set(existing_df['url'].tolist())
+    existing_urls = set(existing_df['url'])
     new_records = []
     page = 1
     while True:
@@ -106,12 +97,11 @@ def main():
                 continue
             try:
                 title, content, post_date = scrape_article(url)
-                new_records.append({
-                    'title': title,
-                    'content': content,
-                    'post_date': post_date,
-                    'url': url
-                })
+                if title:
+                    new_records.append({'title': title,
+                                        'content': content,
+                                        'post_date': post_date,
+                                        'url': url})
                 time.sleep(1)
             except Exception as e:
                 print(f'Error scraping {url}: {e}')
