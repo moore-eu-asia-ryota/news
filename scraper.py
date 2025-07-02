@@ -32,7 +32,7 @@ CZECH_MONTHS = {
     'září': '09', 'října': '10', 'listopadu': '11', 'prosince': '12'
 }
 
-SOURCE_NAME = 'Moore Czech s.r.o.'
+SOURCE_NAME = 'Moore Czech Republic s.r.o.'
 
 
 def scrape_listing(page):
