@@ -4,11 +4,12 @@ import pandas as pd
 import os
 import time
 
-BASE_URL = 'https://www.moore-czech.cz/tiskove-zprávy'
+BASE_URL = 'https://www.moore-czech.cz/tiskove-zpravy'
 OUTPUT_DIR = 'output'
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
 
-# Browser-like headers\headers = {
+# Browser-like headers\mCOMMENTS
+HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                   'AppleWebKit/537.36 (KHTML, like Gecko) '
                   'Chrome/115.0.0.0 Safari/537.36',
@@ -17,17 +18,12 @@ OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
     'Connection': 'keep-alive',
     'Referer': BASE_URL
 }
-headers = {
-    'User-Agent': HEADERS['User-Agent'],
-    'Accept': HEADERS['Accept'],
-    'Accept-Language': HEADERS['Accept-Language'],
-    'Connection': HEADERS['Connection'],
-    'Referer': HEADERS['Referer']
-}
+
 session = requests.Session()
 session.headers.update(HEADERS)
 # Warm up session to get cookies
-_ = session.get(BASE_URL)
+resp_init = session.get(BASE_URL)
+resp_init.raise_for_status()
 
 CZECH_MONTHS = {
     'ledna': '01', 'února': '02', 'března': '03', 'dubna': '04',
@@ -47,27 +43,28 @@ def scrape_article(url):
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    title = soup.select_one('h1')
-    title = title.get_text(strip=True) if title else ''
-    # Date extraction
-    date_header = soup.find('h4')
+    # Title
+    title_tag = soup.select_one('h1')
+    title = title_tag.get_text(strip=True) if title_tag else ''
+    # Date extraction from h4 or time element
     post_date = ''
-    if date_header:
-        parts = date_header.get_text(strip=True).split()
+    date_el = soup.find('h4') or soup.find('time')
+    if date_el:
+        date_text = date_el.get_text(strip=True)
+        parts = date_text.split()
         if len(parts) >= 3:
             day, month_cz, year = parts[0], parts[1].lower(), parts[2]
             month = CZECH_MONTHS.get(month_cz, '01')
             post_date = f"{year}-{month}-{day.zfill(2)}"
-    # Content extraction: capture all text inside entry-content container
-    content_div = soup.select_one('div.entry-content')
-    if not content_div:
-        # fallback: use article tag
-        content_div = soup.find('article')
-    content = ''
+    # Content extraction: paragraphs and list items inside entry-content or article
+    content_div = soup.select_one('div.entry-content') or soup.find('article')
+    content_parts = []
     if content_div:
-        content = '\n\n'.join(
-            [p.get_text(strip=True) for p in content_div.find_all(['p', 'li'])]
-        )
+        for tag in content_div.find_all(['p', 'li']):
+            text = tag.get_text(strip=True)
+            if text:
+                content_parts.append(text)
+    content = '\n\n'.join(content_parts)
     return title, content, post_date
 
 def load_existing():
@@ -80,8 +77,8 @@ def load_existing():
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    existing = load_existing()
-    seen_urls = set(existing['url'])
+    existing_df = load_existing()
+    seen = set(existing_df['url'])
     new_records = []
     page = 1
     while True:
@@ -89,7 +86,7 @@ def main():
         if not urls:
             break
         for url in urls:
-            if url in seen_urls:
+            if url in seen:
                 continue
             try:
                 title, content, post_date = scrape_article(url)
@@ -104,10 +101,8 @@ def main():
                 print(f"Error scraping {url}: {e}")
             time.sleep(1)
         page += 1
-
     if new_records:
-        df_new = pd.DataFrame(new_records)
-        updated = pd.concat([existing, df_new], ignore_index=True)
+        updated = pd.concat([existing_df, pd.DataFrame(new_records)], ignore_index=True)
         updated.to_csv(OUTPUT_FILE, index=False)
         print(f"Added {len(new_records)} new articles. Total now {len(updated)}.")
     else:
