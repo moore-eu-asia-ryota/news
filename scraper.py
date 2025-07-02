@@ -8,11 +8,11 @@ BASE_URL = 'https://www.moore-czech.cz/tiskove-zpravy'
 OUTPUT_DIR = 'output'
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
 
-# Browser-like headers\mCOMMENTS
+# Browser-like headers
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                  'AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/115.0.0.0 Safari/537.36',
+    'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                   'AppleWebKit/537.36 (KHTML, like Gecko) '
+                   'Chrome/115.0.0.0 Safari/537.36'),
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
     'Connection': 'keep-alive',
@@ -22,8 +22,7 @@ HEADERS = {
 session = requests.Session()
 session.headers.update(HEADERS)
 # Warm up session to get cookies
-resp_init = session.get(BASE_URL)
-resp_init.raise_for_status()
+session.get(BASE_URL)
 
 CZECH_MONTHS = {
     'ledna': '01', 'února': '02', 'března': '03', 'dubna': '04',
@@ -36,6 +35,7 @@ def scrape_listing(page):
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
+    # Article links in listing are under <h5><a>
     return [requests.compat.urljoin(BASE_URL, a['href'])
             for a in soup.select('h5 a[href]')]
 
@@ -43,28 +43,29 @@ def scrape_article(url):
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    # Title
-    title_tag = soup.select_one('h1')
+    # Title: try h1, then first h2
+    title_tag = soup.find('h1') or soup.find('h2')
     title = title_tag.get_text(strip=True) if title_tag else ''
-    # Date extraction from h4 or time element
+    # Date: look for <time datetime> or <h4>
     post_date = ''
-    date_el = soup.find('h4') or soup.find('time')
-    if date_el:
-        date_text = date_el.get_text(strip=True)
-        parts = date_text.split()
-        if len(parts) >= 3:
-            day, month_cz, year = parts[0], parts[1].lower(), parts[2]
-            month = CZECH_MONTHS.get(month_cz, '01')
-            post_date = f"{year}-{month}-{day.zfill(2)}"
-    # Content extraction: paragraphs and list items inside entry-content or article
+    time_tag = soup.find('time')
+    if time_tag and time_tag.has_attr('datetime'):
+        post_date = time_tag['datetime']
+    else:
+        h4_tag = soup.find('h4')
+        if h4_tag:
+            parts = h4_tag.get_text(strip=True).split()
+            if len(parts) >= 3:
+                day, month_cz, year = parts[0], parts[1].lower(), parts[2]
+                month = CZECH_MONTHS.get(month_cz, '01')
+                post_date = f"{year}-{month}-{day.zfill(2)}"
+    # Content: get all visible text inside entry-content or article
     content_div = soup.select_one('div.entry-content') or soup.find('article')
-    content_parts = []
+    content = ''
     if content_div:
-        for tag in content_div.find_all(['p', 'li']):
-            text = tag.get_text(strip=True)
-            if text:
-                content_parts.append(text)
-    content = '\n\n'.join(content_parts)
+        raw = content_div.get_text(separator='\n').splitlines()
+        lines = [line.strip() for line in raw if line.strip() and line.strip().lower() != 'share']
+        content = '\n\n'.join(lines)
     return title, content, post_date
 
 def load_existing():
@@ -78,15 +79,16 @@ def load_existing():
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     existing_df = load_existing()
-    seen = set(existing_df['url'])
+    seen_urls = set(existing_df['url'])
     new_records = []
     page = 1
     while True:
         urls = scrape_listing(page)
         if not urls:
             break
+        print(f"Page {page} found {len(urls)} articles.")
         for url in urls:
-            if url in seen:
+            if url in seen_urls:
                 continue
             try:
                 title, content, post_date = scrape_article(url)
