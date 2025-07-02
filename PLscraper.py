@@ -6,7 +6,8 @@ import time
 from urllib.parse import urljoin
 
 # ——— Configuration ———
-BASE_LISTING  = 'https://moorepolska.pl/artykuly/'
+# JetEngine archive for the "Artykuły" category (tax ID 31)
+PAGE_URL      = 'https://moorepolska.pl/artykuly/?jsf=jet-engine&tax=category:31&pagenum={page}'
 OUTPUT_DIR    = 'output'
 OUTPUT_FILE   = os.path.join(OUTPUT_DIR, 'articles.csv')
 
@@ -18,16 +19,13 @@ HEADERS = {
     ),
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language': 'pl-PL,pl;q=0.9',
-    'Connection': 'keep-alive',
-    'Referer': BASE_LISTING
+    'Referer': 'https://moorepolska.pl/artykuly/'
 }
 
-# Warm up session to pick up cookies, etc.
 session = requests.Session()
 session.headers.update(HEADERS)
-session.get(BASE_LISTING)
 
-# For fallback Polish‐month parsing (if <time> isn’t present)
+# Polish‐month lookup for fallback parsing
 PL_MONTHS = {
     'stycznia':'01','lutego':'02','marca':'03','kwietnia':'04',
     'maja':'05','czerwca':'06','lipca':'07','sierpnia':'08',
@@ -37,44 +35,40 @@ PL_MONTHS = {
 SOURCE_NAME = 'Moore Polska'
 
 
-def scrape_listing():
+def scrape_listing(page):
     """
-    Hit /artykuly/ once, pull every <h3><a href="…">…</a></h3>,
-    return a deduped list of full URLs.
+    Fetch page {page} of the Artykuły archive and return
+    all article URLs by selecting each "Czytaj dalej" link.
     """
-    resp = session.get(BASE_LISTING)
+    url = PAGE_URL.format(page=page)
+    resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
 
     urls = []
-    seen = set()
-    for h3 in soup.find_all('h3'):
-        a = h3.find('a', href=True)
-        if not a:
-            continue
-        full = urljoin(BASE_LISTING, a['href'])
-        if full not in seen:
-            seen.add(full)
-            urls.append(full)
-
+    for a in soup.find_all('a', href=True):
+        if a.get_text(strip=True) == 'Czytaj dalej':
+            full = urljoin(url, a['href'])
+            if full not in urls:
+                urls.append(full)
     return urls
 
 
 def scrape_article(url):
     """
-    Given one article URL, fetch title, date, and content.
+    Given an article URL, extract title, ISO date, and plain-text content.
     """
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
 
-    # — Title
+    # Title
     h1 = soup.find('h1')
     title = h1.get_text(strip=True) if h1 else ''
 
-    # — Date: prefer <time datetime="YYYY-MM-DD…"> fallback to .entry-meta text
+    # Date: prefer <time datetime="…">, else fallback to .entry-meta
     post_date = ''
-    t = soup.find('time', attrs={'datetime': True})
+    t = soup.find('time', datetime=True)
     if t:
         post_date = t['datetime'][:10]
     else:
@@ -86,22 +80,22 @@ def scrape_article(url):
                 mon = PL_MONTHS.get(mon_pl, '01')
                 post_date = f"{year}-{mon}-{day.zfill(2)}"
 
-    # — Content: grab all <p>, <h2>, <h3>, <li> under .entry-content
-    cont = soup.select_one('div.entry-content')
+    # Content: grab text from paragraphs, headers, list items
+    content_div = soup.select_one('div.entry-content') or soup.find('article')
     lines = []
-    if cont:
-        for blk in cont.find_all(['p','h2','h3','li']):
+    if content_div:
+        for blk in content_div.find_all(['p','h2','h3','li']):
             txt = blk.get_text(strip=True)
             if txt and txt.lower() != 'share':
                 lines.append(txt)
     content = '\n\n'.join(lines)
 
     return {
-        'title':   title,
+        'title': title,
         'content': content,
         'post_date': post_date,
-        'url':     url,
-        'source':  SOURCE_NAME
+        'url': url,
+        'source': SOURCE_NAME
     }
 
 
@@ -121,27 +115,32 @@ def load_existing():
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-
     existing = load_existing()
-    seen_urls = set(existing['url'].tolist())
+    seen = set(existing['url'])
+    new_recs = []
 
-    new_records = []
-    for url in scrape_listing():
-        if url in seen_urls:
-            continue
-        try:
-            rec = scrape_article(url)
-            if rec['title'] and rec['content']:
-                new_records.append(rec)
-        except Exception as e:
-            print(f"Error scraping {url}: {e}")
-        time.sleep(1)
+    page = 1
+    while True:
+        urls = scrape_listing(page)
+        if not urls:
+            break
+        for u in urls:
+            if u in seen:
+                continue
+            try:
+                rec = scrape_article(u)
+                if rec['title'] and rec['content']:
+                    new_recs.append(rec)
+            except Exception as e:
+                print(f"Error scraping {u}: {e}")
+            time.sleep(1)
+        page += 1
 
-    if new_records:
-        df_new = pd.DataFrame(new_records)
-        out = pd.concat([existing, df_new], ignore_index=True)
-        out.to_csv(OUTPUT_FILE, index=False)
-        print(f"Added {len(new_records)} articles (total {len(out)}).")
+    if new_recs:
+        df_new = pd.DataFrame(new_recs)
+        df_out = pd.concat([existing, df_new], ignore_index=True)
+        df_out.to_csv(OUTPUT_FILE, index=False)
+        print(f"Added {len(new_recs)} new articles (total {len(df_out)}).")
     else:
         print("No new articles found.")
 
