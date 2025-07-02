@@ -28,7 +28,7 @@ jobs:
           pip install requests beautifulsoup4 pandas
 
       - name: Run scraper
-        run: python scraper.py
+        run: python PLscraper.py
 
       - name: Commit and push CSV
         run: |
