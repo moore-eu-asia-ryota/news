@@ -27,14 +27,13 @@ resp_init.raise_for_status()
 
 def scrape_listing(page):
     """
-    Scrape the listing page for article URLs using <h5> headings.
+    Scrape the listing page for article URLs from <h5> headings.
     """
     url = f'{BASE_URL}?page={page}'
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
     urls = []
-    # Entries are marked by <h5> tags containing an <a> to the article
     for heading in soup.find_all('h5'):
         a = heading.find('a', href=True)
         if a:
@@ -50,46 +49,59 @@ def scrape_article(url):
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    # Title
-    title_tag = soup.find('h1')
-    title = title_tag.get_text(strip=True) if title_tag else ''
-    # Content paragraphs
+    title = soup.find('h1').get_text(strip=True) if soup.find('h1') else ''
     content_div = soup.select_one('div.entry-content')
     paragraphs = content_div.find_all('p') if content_div else []
     content = '\n\n'.join(p.get_text(strip=True) for p in paragraphs)
-    # Date from <time> element
     date_tag = soup.find('time')
-    post_date = date_tag['datetime'] if date_tag and date_tag.has_attr('datetime') else None
+    post_date = date_tag['datetime'] if date_tag and date_tag.has_attr('datetime') else ''
     return title, content, post_date
+
+
+def load_existing():
+    """
+    Load existing CSV if present, else return empty DataFrame.
+    """
+    if os.path.exists(OUTPUT_FILE):
+        return pd.read_csv(OUTPUT_FILE)
+    else:
+        return pd.DataFrame(columns=['title', 'content', 'post_date', 'url'])
 
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    existing_df = load_existing()
+    existing_urls = set(existing_df['url'].tolist())
+    new_records = []
     page = 1
-    articles = []
     while True:
         urls = scrape_listing(page)
         if not urls:
             break
         print(f'Page {page} found {len(urls)} articles.')
         for url in urls:
+            if url in existing_urls:
+                continue
             try:
                 title, content, post_date = scrape_article(url)
-                articles.append({
+                new_records.append({
                     'title': title,
                     'content': content,
                     'post_date': post_date,
                     'url': url
                 })
-                # Polite crawl delay
                 time.sleep(1)
             except Exception as e:
                 print(f'Error scraping {url}: {e}')
         page += 1
 
-    df = pd.DataFrame(articles)
-    df.to_csv(OUTPUT_FILE, index=False)
-    print(f'Saved {len(df)} articles to {OUTPUT_FILE}')
+    if new_records:
+        new_df = pd.DataFrame(new_records)
+        updated_df = pd.concat([existing_df, new_df], ignore_index=True)
+        updated_df.to_csv(OUTPUT_FILE, index=False)
+        print(f'Added {len(new_records)} new articles. Total now {len(updated_df)}.')
+    else:
+        print('No new articles found.')
 
 if __name__ == '__main__':
     main()
