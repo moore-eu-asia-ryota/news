@@ -21,41 +21,45 @@ HEADERS = {
 
 session = requests.Session()
 session.headers.update(HEADERS)
-
 # Warm up session to get any cookies
 resp_init = session.get(BASE_URL)
 resp_init.raise_for_status()
 
 def scrape_listing(page):
+    """
+    Scrape the listing page for article URLs using <h5> headings.
+    """
     url = f'{BASE_URL}?page={page}'
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    entries = soup.select('article.press-release')
-    results = []
-    for entry in entries:
-        link_tag = entry.find('a', href=True)
-        if not link_tag:
-            continue
-        link = link_tag['href']
-        full_url = requests.compat.urljoin(BASE_URL, link)
-        date_tag = entry.find('time')
-        post_date = date_tag['datetime'] if date_tag else None
-        results.append({'url': full_url, 'post_date': post_date})
-    return results
+    urls = []
+    # Entries are marked by <h5> tags containing an <a> to the article
+    for heading in soup.find_all('h5'):
+        a = heading.find('a', href=True)
+        if a:
+            full_url = requests.compat.urljoin(BASE_URL, a['href'])
+            urls.append(full_url)
+    return urls
 
 
 def scrape_article(url):
+    """
+    Scrape individual article page for title, content, and post_date.
+    """
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
+    # Title
     title_tag = soup.find('h1')
     title = title_tag.get_text(strip=True) if title_tag else ''
+    # Content paragraphs
     content_div = soup.select_one('div.entry-content')
     paragraphs = content_div.find_all('p') if content_div else []
     content = '\n\n'.join(p.get_text(strip=True) for p in paragraphs)
+    # Date from <time> element
     date_tag = soup.find('time')
-    post_date = date_tag['datetime'] if date_tag else None
+    post_date = date_tag['datetime'] if date_tag and date_tag.has_attr('datetime') else None
     return title, content, post_date
 
 
@@ -64,20 +68,23 @@ def main():
     page = 1
     articles = []
     while True:
-        listings = scrape_listing(page)
-        if not listings:
+        urls = scrape_listing(page)
+        if not urls:
             break
-        for item in listings:
-            title, content, post_date = scrape_article(item['url'])
-            articles.append({
-                'title': title,
-                'content': content,
-                'post_date': post_date,
-                'url': item['url']
-            })
-            # Polite crawling
-            time.sleep(1)
-        print(f'Page {page} scraped, {len(listings)} articles.')
+        print(f'Page {page} found {len(urls)} articles.')
+        for url in urls:
+            try:
+                title, content, post_date = scrape_article(url)
+                articles.append({
+                    'title': title,
+                    'content': content,
+                    'post_date': post_date,
+                    'url': url
+                })
+                # Polite crawl delay
+                time.sleep(1)
+            except Exception as e:
+                print(f'Error scraping {url}: {e}')
         page += 1
 
     df = pd.DataFrame(articles)
