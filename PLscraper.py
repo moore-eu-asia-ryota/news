@@ -7,13 +7,16 @@ import pandas as pd
 
 # ─── CONFIG ─────────────────────────────────────────────────────────────
 
-# start on the first page of the "Artykuły" listing
-BASE_URL = 'https://moorepolska.pl/artykuly/?jsf=jet-engine&tax=category:31&pagenum=1'
+# template for each page of the "Artykuły" listing
+LISTING_URL_TPL = (
+    'https://moorepolska.pl/artykuly/'
+    '?jsf=jet-engine&tax=category:31&pagenum={page}'
+)
+
 OUTPUT_DIR = 'output'
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
 SOURCE_NAME = 'Moore Polska'
 
-# browser-like headers
 HEADERS = {
     'User-Agent': (
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -22,66 +25,99 @@ HEADERS = {
     ),
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
-    'Referer': BASE_URL
 }
 
 session = requests.Session()
 session.headers.update(HEADERS)
-session.get(BASE_URL)  # warm up cookies
 
-# ─── LISTING PAGE ────────────────────────────────────────────────────────
+# ─── PAGINATED LISTING SCRAPE ───────────────────────────────────────────
 
 def scrape_listing():
-    """Fetch all article URLs from the Artykuły listing page."""
-    resp = session.get(BASE_URL)
-    resp.raise_for_status()
-    soup = BeautifulSoup(resp.text, 'html.parser')
-
+    """
+    Loop through pages 1, 2, ... until a page has no articles.
+    Returns a de-duplicated list of article URLs.
+    """
+    page = 1
     urls = []
-    # each card is a .jet-listing-grid__item
-    for item in soup.select('div.jet-listing-grid__item'):
-        a = item.find('a', href=True)
-        if not a:
-            continue
-        link = urljoin(BASE_URL, a['href'])
-        urls.append(link)
+    while True:
+        url = LISTING_URL_TPL.format(page=page)
+        resp = session.get(url)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, 'html.parser')
 
-    # preserve order + dedupe
+        items = soup.select('div.jet-listing-grid__item')
+        if not items:
+            break
+
+        for item in items:
+            a = item.find('a', href=True)
+            if a:
+                full = urljoin(url, a['href'])
+                urls.append(full)
+
+        page += 1
+        time.sleep(0.5)  # be polite
+
+    # preserve ordering, drop dupes
     return list(dict.fromkeys(urls))
 
-# ─── ARTICLE PAGE ────────────────────────────────────────────────────────
+
+# ─── SINGLE-ARTICLE SCRAPE ──────────────────────────────────────────────
 
 def scrape_article(url):
-    """Extract title, publication date and full text from a single article."""
+    """
+    Fetch title, publication date and the full text of one article.
+    - Title: prefers <h1> text; if that <h1> wraps an <a>, grabs the <a> text.
+    - Date: the visible text in <time>
+    - Content: concatenates all headings + paragraphs in the body.
+    """
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
 
-    # --- title ---
-    title_tag = soup.select_one('.elementor-widget-theme-post-title .elementor-heading-title')
-    title = title_tag.get_text(strip=True) if title_tag else ''
+    # ── TITLE ──
+    title = ''
+    h1 = soup.select_one('.elementor-widget-theme-post-title .elementor-heading-title')
+    if h1:
+        a = h1.find('a')
+        title = a.get_text(strip=True) if a else h1.get_text(strip=True)
+    else:
+        # fallback to first <h1> or even <title> tag
+        raw_h1 = soup.find('h1')
+        if raw_h1:
+            a = raw_h1.find('a')
+            title = a.get_text(strip=True) if a else raw_h1.get_text(strip=True)
+        else:
+            # ultimate fallback
+            title_tag = soup.find('title')
+            title = title_tag.get_text(strip=True) if title_tag else ''
 
-    # --- date ---
-    date_tag = soup.select_one('.elementor-widget-post-info time')
-    post_date = date_tag.get_text(strip=True) if date_tag else ''
+    # ── DATE ──
+    date_el = soup.select_one('.elementor-widget-post-info time')
+    post_date = date_el.get_text(strip=True) if date_el else ''
 
-    # --- content: pull all headings + text blocks in order ---
-    content_parts = []
-    # we target both text-editor (paragraphs) and heading widgets
-    for widget in soup.select(
-        '.elementor-widget-text-editor .elementor-widget-container, '
+    # ── CONTENT ──
+    parts = []
+    # grab text-editor (paragraphs) and heading widgets in document order
+    for sel in (
+        '.elementor-widget-text-editor .elementor-widget-container',
         '.elementor-widget-heading .elementor-heading-title'
     ):
-        text = widget.get_text(strip=True)
-        # skip empty or boilerplate
-        if not text or text.lower().startswith(('zapraszamy','może cię')):
-            continue
-        content_parts.append(text)
+        for node in soup.select(sel):
+            text = node.get_text(strip=True)
+            if not text:
+                continue
+            # skip boilerplate
+            low = text.lower()
+            if low.startswith('zapraszamy') or low.startswith('może cię'):
+                continue
+            parts.append(text)
 
-    content = '\n\n'.join(content_parts)
+    content = '\n\n'.join(parts)
     return title, content, post_date
 
-# ─── STATE HANDLING ──────────────────────────────────────────────────────
+
+# ─── STATE LOAD / SAVE ───────────────────────────────────────────────────
 
 def load_existing():
     cols = ['title', 'content', 'post_date', 'url', 'source']
@@ -89,43 +125,42 @@ def load_existing():
         try:
             df = pd.read_csv(OUTPUT_FILE)
             for c in cols:
-                if c not in df:
+                if c not in df.columns:
                     df[c] = ''
             return df[cols]
         except pd.errors.EmptyDataError:
-            return pd.DataFrame(columns=cols)
+            pass
     return pd.DataFrame(columns=cols)
 
-# ─── MAIN ────────────────────────────────────────────────────────────────
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     existing = load_existing()
     seen = set(existing['url'])
-    new_entries = []
+    new_records = []
 
-    for url in scrape_listing():
-        if url in seen:
+    for article_url in scrape_listing():
+        if article_url in seen:
             continue
         try:
-            title, content, post_date = scrape_article(url)
+            title, content, date = scrape_article(article_url)
             if title and content:
-                new_entries.append({
+                new_records.append({
                     'title': title,
                     'content': content,
-                    'post_date': post_date,
-                    'url': url,
+                    'post_date': date,
+                    'url': article_url,
                     'source': SOURCE_NAME
                 })
         except Exception as e:
-            print(f"Error scraping {url}: {e}")
+            print(f"Failed {article_url}: {e}")
         time.sleep(1)
 
-    if new_entries:
-        df_new = pd.DataFrame(new_entries)
-        df_out = pd.concat([existing, df_new], ignore_index=True)
-        df_out.to_csv(OUTPUT_FILE, index=False)
-        print(f"Added {len(new_entries)} new articles. Total now {len(df_out)}.")
+    if new_records:
+        df_new = pd.DataFrame(new_records)
+        out = pd.concat([existing, df_new], ignore_index=True)
+        out.to_csv(OUTPUT_FILE, index=False)
+        print(f"Added {len(new_records)} articles (total {len(out)})")
     else:
         print("No new articles found.")
 
