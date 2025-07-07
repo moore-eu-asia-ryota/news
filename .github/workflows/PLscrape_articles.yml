@@ -1,6 +1,5 @@
 name: Scrape Moore Polska Articles
 
-# Grant workflow permissions to push to the repo
 permissions:
   contents: write
 
@@ -16,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          persist-credentials: true  # ensure GITHUB_TOKEN is used for pushes
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -28,7 +27,7 @@ jobs:
           pip install requests beautifulsoup4 pandas
 
       - name: Run scraper
-        run: python PLscraper.py
+        run: python BDRscraper.py
 
       - name: Commit and push CSV
         run: |
@@ -38,6 +37,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Update articles.csv"
+            git commit -m "Update Moore Polska articles.csv"
             git push
           fi
