@@ -7,7 +7,7 @@ import re
 
 BASE_URL = 'https://moorepolska.pl/artykuly/?jsf=jet-engine&tax=category:31&pagenum='
 OUTPUT_DIR = 'output'
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'PLarticles.csv')
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
 
 HEADERS = {
     'User-Agent': (
