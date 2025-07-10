@@ -8,6 +8,9 @@ on:
   push:
     branches: [main]
 
+  schedule:
+    - cron: '0 4 */3 * *'  # every 3 days at midnight UTC
+
 jobs:
   build-html:
     runs-on: ubuntu-latest
