@@ -9,7 +9,7 @@
       margin: 0;
       padding: 20px;
       font-family: Arial, sans-serif;
-      padding-top: 100px;
+      padding-top: 140px;
     }
     .container {
       max-width: 840px;
@@ -17,7 +17,7 @@
     }
     .controls {
       position: fixed;
-      top: 20px;
+      top: 60px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 1000;
@@ -91,6 +91,11 @@
       width: 100%;
     }
     .card .summary {
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .card .full-content {
       display: none;
       line-height: 1.6;
       color: #333;
@@ -113,14 +118,6 @@
       position: absolute;
       right: 30px;
       bottom: 30px;
-    }
-    .card .btn.trans {
-      right: 160px;
-      background: #034d66;
-    }
-    .translate-container {
-      margin-top: 20px;
-      min-height: 40px;
     }
   </style>
   <script type="text/javascript">
@@ -148,32 +145,14 @@
       sortCards(sortAsc);
     }
 
-    function toggleSummary(id, btn) {
-      var s = document.getElementById(id);
-      if (s.style.display === 'block') {
-        s.style.display = 'none';
+    function toggleFullContent(idx, btn) {
+      var full = document.getElementById('full' + idx);
+      if (full.style.display === 'block') {
+        full.style.display = 'none';
         btn.innerText = 'Read full article';
       } else {
-        s.style.display = 'block';
-        btn.innerText = 'Hide summary';
-      }
-    }
-
-    function showTranslateWidget(btn, idx) {
-      var container = btn.parentElement.querySelector('.translate-container');
-      if (container.style.display === 'none' || container.style.display === '') {
-        container.style.display = 'block';
-        container.innerHTML = '<div id="google_translate_element' + idx + '"></div>';
-        new google.translate.TranslateElement({
-          pageLanguage: 'auto',
-          includedLanguages: 'en,ko,ja,zh,fr,de,es,ru',
-          layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-        }, 'google_translate_element' + idx);
-        btn.innerText = 'Hide Translate';
-      } else {
-        container.style.display = 'none';
-        container.innerHTML = '';
-        btn.innerText = 'Translate';
+        full.style.display = 'block';
+        btn.innerText = 'Hide full article';
       }
     }
 
@@ -185,10 +164,11 @@
       document.querySelectorAll('.card').forEach(function(card){
         var t   = card.querySelector('h2').innerText.toLowerCase();
         var sum = card.querySelector('.summary').innerText.toLowerCase();
+        var full = card.querySelector('.full-content').innerText.toLowerCase();
         var dt  = card.querySelector('.date').innerText.trim().split('.');
         var y   = dt[2], m = dt[1];
         var so  = card.querySelector('.source a').innerText;
-        var ok = (t + ' ' + sum).includes(text)
+        var ok = (t + ' ' + sum + ' ' + full).includes(text)
               && (!year   || y   === year)
               && (!month  || m   === month)
               && (!src    || so  === src);
@@ -229,12 +209,20 @@
       });
     };
   </script>
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <!-- Google Translate widget for entire page -->
   <script type="text/javascript">
-    function googleTranslateElementInit() {}
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'auto',
+        includedLanguages: 'en,ko,ja,zh,fr,de,es,ru',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
   </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
+  <div id="google_translate_element" style="position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2000;"></div>
   <button id="backToTop" title="Back to top">↑</button>
   <div class="container">
     <div class="controls">
@@ -259,6 +247,11 @@
       <p class="date">30.06.2025</p>
       <hr/>
       <p class="summary" id="summary0">Online výuka bez kompromisů. Online Střední škola Spektrum potvrdila svou kvalitu maturitními výsledky ​
+
+30 června 2025
+
+Zatímco většina studentů se na maturitu připravuje v lavicích, maturanti Střední školy Spektrum zvládli zkoušku dospělosti zcela bez prezenční výuky.</p>
+      <p class="full-content" id="full0" style="display:none;">Online výuka bez kompromisů. Online Střední škola Spektrum potvrdila svou kvalitu maturitními výsledky ​
 
 30 června 2025
 
@@ -299,14 +292,9 @@ https://education.ec.europa.eu/focus-topics/digital-education/action-plan</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2025/online-stredni-skola" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary0', this)">
+        onclick="toggleFullContent(0, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 0)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -315,6 +303,11 @@ https://education.ec.europa.eu/focus-topics/digital-education/action-plan</p>
       <p class="date">11.06.2025</p>
       <hr/>
       <p class="summary" id="summary1">Vysoké nároky, celoživotní vzdělávání i zapojení AI. Podoba moderního účetnictví se prudce mění
+
+11 června 2025
+
+Před 30 lety zažil outsourcing účetních služeb porevoluční boom.</p>
+      <p class="full-content" id="full1" style="display:none;">Vysoké nároky, celoživotní vzdělávání i zapojení AI. Podoba moderního účetnictví se prudce mění
 
 11 června 2025
 
@@ -375,14 +368,9 @@ dodává Marcela Hrdá.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2025/podoba-moderniho-ucetnictvi" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary1', this)">
+        onclick="toggleFullContent(1, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 1)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -391,6 +379,11 @@ dodává Marcela Hrdá.</p>
       <p class="date">27.05.2025</p>
       <hr/>
       <p class="summary" id="summary2">Digitální škola patří mezi nejlepší v regionu. Umožňuje studium i profesionálním sportovcům
+
+27 května 2025
+
+Napříč republikou je 1 327 středních škol.</p>
+      <p class="full-content" id="full2" style="display:none;">Digitální škola patří mezi nejlepší v regionu. Umožňuje studium i profesionálním sportovcům
 
 27 května 2025
 
@@ -435,14 +428,9 @@ dodává Ilona Pilařová.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2025/digitalni-skola-patri-mezi-nejlepsi-v-regionu" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary2', this)">
+        onclick="toggleFullContent(2, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 2)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -451,6 +439,11 @@ dodává Ilona Pilařová.</p>
       <p class="date">16.04.2025</p>
       <hr/>
       <p class="summary" id="summary3">Energetika stále čelí řadě nejistot. Přechod na obnovitelné zdroje brzdí poplatky i infrastruktura
+
+16 dubna 2025
+
+Přestože je přechod od fosilních paliv k čistým zdrojům energie v Evropě jednou z klíčových strategií boje proti klimatickým změnám i energetické závislosti, český energetický sektor se stále potýká s řadou strukturálních a regulatorních překážek.</p>
+      <p class="full-content" id="full3" style="display:none;">Energetika stále čelí řadě nejistot. Přechod na obnovitelné zdroje brzdí poplatky i infrastruktura
 
 16 dubna 2025
 
@@ -499,14 +492,9 @@ dodává Tomáš Křapáček.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2025/energetika-stale-celi-rade-nejistot" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary3', this)">
+        onclick="toggleFullContent(3, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 3)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -515,6 +503,11 @@ dodává Tomáš Křapáček.</p>
       <p class="date">03.04.2025</p>
       <hr/>
       <p class="summary" id="summary4">Vztah mezi klientem a finanční institucí posilují digitální procesy i digitální peníze
+
+3 dubna 2025
+
+Jak prohloubit důvěru retailové klientely ve finanční instituce? S odpovědí na tuto otázku pomáhají i zkušenosti a přístupy z jiných trhů.</p>
+      <p class="full-content" id="full4" style="display:none;">Vztah mezi klientem a finanční institucí posilují digitální procesy i digitální peníze
 
 3 dubna 2025
 
@@ -555,14 +548,9 @@ uzavírá Fleming.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2025/vztah-mezi-klientem-a-financni-instituci" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary4', this)">
+        onclick="toggleFullContent(4, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 4)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -571,6 +559,11 @@ uzavírá Fleming.</p>
       <p class="date">02.04.2025</p>
       <hr/>
       <p class="summary" id="summary5">Talk2amy vstupuje do nové éry díky strategickému partnerství s Moore Czech Republic
+
+2 dubna 2025
+
+Psychologická platforma Talk2amy, vyvinutá společností Mongata, dosáhla dalšího klíčového milníku ve svém rozvoji. Spojení sil s renomovanou poradenskou skupinou Moore Czech Republic jí otevírá nové možnosti pro inovace, expanzi a rozšíření služeb.</p>
+      <p class="full-content" id="full5" style="display:none;">Talk2amy vstupuje do nové éry díky strategickému partnerství s Moore Czech Republic
 
 2 dubna 2025
 
@@ -613,14 +606,9 @@ konstatuje Martin Rücker, spoluzakladatel a ředitel společnosti Mongata.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2025/talk2amy-vstupuje-do-nove-ery" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary5', this)">
+        onclick="toggleFullContent(5, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 5)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -629,6 +617,11 @@ konstatuje Martin Rücker, spoluzakladatel a ředitel společnosti Mongata.</p>
       <p class="date">13.03.2025</p>
       <hr/>
       <p class="summary" id="summary6">Firmy v roce 2025 čekají další daňové změny, stavebnictví nebude výjimkou
+
+13 března 2025
+
+Začátek roku 2025 přinesl řadu změn v oblasti daní, které ovlivňují fungování firem v České republice. Zásadními úpravami prošel například zákon o dani z přidané hodnoty a došlo také k zúžení formy poskytnutí zajištění daně z finanční záruky na bankovní záruku.</p>
+      <p class="full-content" id="full6" style="display:none;">Firmy v roce 2025 čekají další daňové změny, stavebnictví nebude výjimkou
 
 13 března 2025
 
@@ -667,14 +660,9 @@ doporučuje Michal Markvart.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2025/danove-zmeny-2025" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary6', this)">
+        onclick="toggleFullContent(6, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 6)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -682,7 +670,8 @@ doporučuje Michal Markvart.</p>
       <h2>Home-office proměnil trh práce. Zůstane i nadále běžnou praxí?</h2>
       <p class="date">26.02.2025</p>
       <hr/>
-      <p class="summary" id="summary7">Home-office proměnil trh práce. Zůstane i nadále běžnou praxí?
+      <p class="summary" id="summary7">Home-office proměnil trh práce. Zůstane i nadále běžnou praxí?</p>
+      <p class="full-content" id="full7" style="display:none;">Home-office proměnil trh práce. Zůstane i nadále běžnou praxí?
 
 26 února 2025
 
@@ -747,14 +736,9 @@ studie CERGE-EI</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/unor-2025/home-office-promenil-trh-prace-zustane-i-nadale-be" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary7', this)">
+        onclick="toggleFullContent(7, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 7)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -763,6 +747,13 @@ studie CERGE-EI</p>
       <p class="date">09.01.2025</p>
       <hr/>
       <p class="summary" id="summary8">Skupina ANACOT CAPITAL opět rozšiřuje své působení. Do svého portfolia získala blanenského výrobce pistolí Laugo Arms Czechoslovakia
+
+9 ledna 2025
+
+Strojírenská skupina ANACOT CAPITAL, za kterou stojí podnikatel Pavel Drobil, v prosinci 2024 realizovala transakci vstupu do výrobce sportovních a obranných pistolí Laugo Arms Czechoslovakia společně s fondem
+
+MaeG</p>
+      <p class="full-content" id="full8" style="display:none;">Skupina ANACOT CAPITAL opět rozšiřuje své působení. Do svého portfolia získala blanenského výrobce pistolí Laugo Arms Czechoslovakia
 
 9 ledna 2025
 
@@ -817,14 +808,9 @@ je vlastněný společností Equity Partners a manažersky řízený skupinou Mo
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2025/skupina-anacot-capital-opet-rozsiruje" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary8', this)">
+        onclick="toggleFullContent(8, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 8)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -833,6 +819,11 @@ je vlastněný společností Equity Partners a manažersky řízený skupinou Mo
       <p class="date">19.12.2024</p>
       <hr/>
       <p class="summary" id="summary9">Skupina Moore Czech Republic expanduje na Slovensko v oblasti poradenských služeb
+
+19 prosince 2024
+
+Skupina Moore Czech Republic ve spolupráci se svou sesterskou společností Moore Slovakia rozšiřuje své aktivity na Slovensku. Prostřednictvím společné firmy Moore Consulting SK vstoupila do poradenské společnosti Radvise Group, s. r. o., která své expertní služby nabízí na trhu Slovenské republiky pro klienty ze soukromého i veřejného sektoru.</p>
+      <p class="full-content" id="full9" style="display:none;">Skupina Moore Czech Republic expanduje na Slovensko v oblasti poradenských služeb
 
 19 prosince 2024
 
@@ -861,14 +852,9 @@ Společnost Radvise Group svým vstupem pod křídla značky Moore přináší v
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2024/skupina-moore-czech-republic-expanduje" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary9', this)">
+        onclick="toggleFullContent(9, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 9)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -877,6 +863,11 @@ Společnost Radvise Group svým vstupem pod křídla značky Moore přináší v
       <p class="date">17.12.2024</p>
       <hr/>
       <p class="summary" id="summary10">Zůstat efektivní a nezbláznit se. Moore Czech Republic se připojuje ke světové iniciativě usilující o snižování stresu na pracovišti
+
+17 prosince 2024
+
+Poradenská, auditní a technologická skupina Moore Czech Republic se spolu s</p>
+      <p class="full-content" id="full10" style="display:none;">Zůstat efektivní a nezbláznit se. Moore Czech Republic se připojuje ke světové iniciativě usilující o snižování stresu na pracovišti
 
 17 prosince 2024
 
@@ -919,14 +910,9 @@ https://www.ipsos.com/cs-cz/4-z-10-mladych-cechu-v-poslednim-roce-absentovali-v-
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2024/zustat-efektivni-a-nezblaznit-se" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary10', this)">
+        onclick="toggleFullContent(10, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 10)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -935,6 +921,11 @@ https://www.ipsos.com/cs-cz/4-z-10-mladych-cechu-v-poslednim-roce-absentovali-v-
       <p class="date">05.12.2024</p>
       <hr/>
       <p class="summary" id="summary11">Rekvalifikace jako výtah do vyšších pater profesních i mzdových. Zájem roste, podpora nikoli
+
+5 prosince 2024
+
+Češi málo využívají možnost absolvovat rekvalifikační kurzy.</p>
+      <p class="full-content" id="full11" style="display:none;">Rekvalifikace jako výtah do vyšších pater profesních i mzdových. Zájem roste, podpora nikoli
 
 5 prosince 2024
 
@@ -971,14 +962,9 @@ uzavírá Ilona Pilařová.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2024/rekvalifikace-jako-vytah-do-vyssich-pater" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary11', this)">
+        onclick="toggleFullContent(11, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 11)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -987,6 +973,9 @@ uzavírá Ilona Pilařová.</p>
       <p class="date">03.12.2024</p>
       <hr/>
       <p class="summary" id="summary12">ESG reportování podléhá novým pravidlům. Jeho podobu bude od nového roku udávat směrnice CSRD
+
+3 prosince 2024</p>
+      <p class="full-content" id="full12" style="display:none;">ESG reportování podléhá novým pravidlům. Jeho podobu bude od nového roku udávat směrnice CSRD
 
 3 prosince 2024
 
@@ -1029,14 +1018,9 @@ Kromě povinností, které směrnice CSRD ukládá, jsou pak důležité i dalš
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2024/esg-reportovani-podleha-novym-pravidlum" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary12', this)">
+        onclick="toggleFullContent(12, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 12)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1045,6 +1029,11 @@ Kromě povinností, které směrnice CSRD ukládá, jsou pak důležité i dalš
       <p class="date">27.11.2024</p>
       <hr/>
       <p class="summary" id="summary13">Skupina Moore Czech Republic opět rozšiřuje své působení – vstoupila do společností PP Business Services a AK AUDIT
+
+27 listopadu 2024
+
+Poradenská, auditorská a technologická skupina Moore Czech Republic majetkově vstoupila v uplynulých týdnech do společností PP Business Services a AK AUDIT. Díky této akvizici dochází k posílení zejména divize Moore Accounting CZ, která se věnuje outsourcingu účetnictví, zpracování mezd a daňovému poradenství, a současně se rozšiřuje portfolio klientů divize Moore Audit CZ.</p>
+      <p class="full-content" id="full13" style="display:none;">Skupina Moore Czech Republic opět rozšiřuje své působení – vstoupila do společností PP Business Services a AK AUDIT
 
 27 listopadu 2024
 
@@ -1069,14 +1058,9 @@ Společnosti PP Business Services a AK AUDIT rozšiřují skupinu Moore Czech Re
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2024/moore-czech-republic-rozisiruje-pole-pusobnosti" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary13', this)">
+        onclick="toggleFullContent(13, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 13)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1085,6 +1069,11 @@ Společnosti PP Business Services a AK AUDIT rozšiřují skupinu Moore Czech Re
       <p class="date">11.11.2024</p>
       <hr/>
       <p class="summary" id="summary14">NIS2 jako velká neznámá. Povědomí o klíčové směrnici pro kyberbezpečnost má jen málokdo
+
+11 listopadu 2024
+
+Poslanecká sněmovna aktuálně projednává nový zákon o kyberbezpečnosti.</p>
+      <p class="full-content" id="full14" style="display:none;">NIS2 jako velká neznámá. Povědomí o klíčové směrnici pro kyberbezpečnost má jen málokdo
 
 11 listopadu 2024
 
@@ -1117,14 +1106,9 @@ Skupina Moore Czech Republic má s implementacemi právních předpisů do kaž
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2024/nis2-jako-velka-neznama" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary14', this)">
+        onclick="toggleFullContent(14, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 14)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1133,6 +1117,11 @@ Skupina Moore Czech Republic má s implementacemi právních předpisů do kaž
       <p class="date">15.10.2024</p>
       <hr/>
       <p class="summary" id="summary15">Firmy vstupují do nové éry povinného ESG reportingu. Důvodem je směrnice CSRD
+
+15 října 2024
+
+Evropské firmy zažívají v oblasti ESG reportingu velké změny.</p>
+      <p class="full-content" id="full15" style="display:none;">Firmy vstupují do nové éry povinného ESG reportingu. Důvodem je směrnice CSRD
 
 15 října 2024
 
@@ -1187,14 +1176,9 @@ Zdroj: https://csrd.cz/co-je-csrd/</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2024/firmy-vstupuji-do-nove-ery-povinneho-esg" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary15', this)">
+        onclick="toggleFullContent(15, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 15)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1203,6 +1187,9 @@ Zdroj: https://csrd.cz/co-je-csrd/</p>
       <p class="date">28.08.2024</p>
       <hr/>
       <p class="summary" id="summary16">Novela zákona o DPH: Příslib zjednodušení provázejí obavy z nadměrného papírování
+
+28 srpna 2024 Poslanecká sněmovna se po prázdninách vrací k projednávání novely zákona o dani z přidané hodnoty.</p>
+      <p class="full-content" id="full16" style="display:none;">Novela zákona o DPH: Příslib zjednodušení provázejí obavy z nadměrného papírování
 
 28 srpna 2024
 
@@ -1251,14 +1238,9 @@ https://www.indexprosperity.cz/2024/index-prosperity-ceska-2023/
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/srpen-2024/novela-zakona-o-dph" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary16', this)">
+        onclick="toggleFullContent(16, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 16)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1267,6 +1249,11 @@ https://www.indexprosperity.cz/2024/index-prosperity-ceska-2023/
       <p class="date">15.07.2024</p>
       <hr/>
       <p class="summary" id="summary17">Změny v DPP a DPČ mohou mít negativní dopad na flexibilitu zaměstnávání v Česku
+
+15 července 2024
+
+Od 1. července vstoupily v platnost nové změny týkající se dohody o provedení práce (DPP) a dohody o pracovní činnosti (DPČ). Mimo zvýšení minimální mzdy a rozšíření práv zaměstnanců pracujících na základě DPP a DPČ, například v oblasti dovolené a zaměstnaneckých výhod, přináší významnou změnu v podobě povinnosti zaměstnavatele oznámit každý měsíc DPP na ČSSZ.</p>
+      <p class="full-content" id="full17" style="display:none;">Změny v DPP a DPČ mohou mít negativní dopad na flexibilitu zaměstnávání v Česku
 
 15 července 2024
 
@@ -1339,14 +1326,9 @@ Společného průzkumu Recruitment Academy a společnosti Edenred se zúčastnil
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2024/zmeny-v-dpp-a-dpc" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary17', this)">
+        onclick="toggleFullContent(17, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 17)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1355,6 +1337,11 @@ Společného průzkumu Recruitment Academy a společnosti Edenred se zúčastnil
       <p class="date">13.06.2024</p>
       <hr/>
       <p class="summary" id="summary18">Udržitelnost energetických firem začíná z pohledu investorů hrát prim
+
+13 června 2024
+
+Důležitost přechodu od fosilních paliv k obnovitelným zdrojům energie nabírá na síle a stává se v energetických firmách tématem číslo jedna. Na udržitelnost se totiž stále častěji ptají investoři, kteří ji při rozhodování, kam své peníze vloží, zohledňují.</p>
+      <p class="full-content" id="full18" style="display:none;">Udržitelnost energetických firem začíná z pohledu investorů hrát prim
 
 13 června 2024
 
@@ -1395,14 +1382,9 @@ Podle MPO decentralizace energetiky, ke které komunitní energetika přispěje,
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2024/udrzitelnost-energetickych-firem" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary18', this)">
+        onclick="toggleFullContent(18, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 18)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1411,6 +1393,11 @@ Podle MPO decentralizace energetiky, ke které komunitní energetika přispěje,
       <p class="date">05.06.2024</p>
       <hr/>
       <p class="summary" id="summary19">I přes výrazný růst cen nemovitostí  realitní bublina v ČR nehrozí
+
+5 června 2024
+
+Ceny nemovitostí v České republice v posledních letech výrazně rostou, zejména ve velkých městech a jejich okolí. Tento růst je způsoben kombinací faktorů, jako je nedostatečná nabídka nových bytů, nižší úrokové sazby hypotečních úvěrů a rostoucí poptávka, ať už ze strany investorů nebo zájemců o vlastní bydlení.</p>
+      <p class="full-content" id="full19" style="display:none;">I přes výrazný růst cen nemovitostí  realitní bublina v ČR nehrozí
 
 5 června 2024
 
@@ -1463,14 +1450,9 @@ dodává Skalický.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2024/tz-ceny-nemovitosti" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary19', this)">
+        onclick="toggleFullContent(19, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 19)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1479,6 +1461,11 @@ dodává Skalický.</p>
       <p class="date">30.05.2024</p>
       <hr/>
       <p class="summary" id="summary20">Ekonomická analýza Moore Czech Republic potvrdila výhodnost investice do lanovky na Ještěd
+
+30 května 2024
+
+Jednokabinová lanovka, pro kterou hlasovali obyvatelé Liberce, radní i zastupitelé, bude sice náročnější na investice, z dlouhodobého hlediska se však jedná o ekonomicky nejvýhodnější variantu.</p>
+      <p class="full-content" id="full20" style="display:none;">Ekonomická analýza Moore Czech Republic potvrdila výhodnost investice do lanovky na Ještěd
 
 30 května 2024
 
@@ -1513,14 +1500,9 @@ Od tragické nehody, ke které došlo v říjnu 2021, je lanovka mimo provoz. Z
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2024/ekonomicka-analyza-lanovka-jested" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary20', this)">
+        onclick="toggleFullContent(20, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 20)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1529,6 +1511,11 @@ Od tragické nehody, ke které došlo v říjnu 2021, je lanovka mimo provoz. Z
       <p class="date">16.05.2024</p>
       <hr/>
       <p class="summary" id="summary21">Hotelnictví: Check-in do roku růstu a digitálních změn V České republice je největší problém krátká doba pobytů turistů
+
+16 května 2024
+
+Sektor ubytovacích služeb v loňském roce překročil svůj pandemický stín. Mnohé hotelové skupiny překonaly rekordy v obsazenosti a výnosnosti.</p>
+      <p class="full-content" id="full21" style="display:none;">Hotelnictví: Check-in do roku růstu a digitálních změn V České republice je největší problém krátká doba pobytů turistů
 
 16 května 2024
 
@@ -1607,14 +1594,9 @@ www.moore-global.com
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2024/hotelnictvi-check-in" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary21', this)">
+        onclick="toggleFullContent(21, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 21)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1623,6 +1605,9 @@ www.moore-global.com
       <p class="date">06.05.2024</p>
       <hr/>
       <p class="summary" id="summary22">Bez ohledu na nedostatek zaměstnanců, Češi nad 55 let si myslí, že najít práci je kvůli věku problém
+
+6 května 2024 Až 85,2 % Čechů starších 55 let se domnívá, že právě věk je hlavní překážkou při hledání nového zaměstnání.</p>
+      <p class="full-content" id="full22" style="display:none;">Bez ohledu na nedostatek zaměstnanců, Češi nad 55 let si myslí, že najít práci je kvůli věku problém
 
 6 května 2024
 
@@ -1661,14 +1646,9 @@ Výzkum realizovala společnost MOORE Czech Republic pomocí Instant Research IP
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2024/prace-cesi-nad-55" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary22', this)">
+        onclick="toggleFullContent(22, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 22)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1677,6 +1657,9 @@ Výzkum realizovala společnost MOORE Czech Republic pomocí Instant Research IP
       <p class="date">20.03.2024</p>
       <hr/>
       <p class="summary" id="summary23">Sophiina volba dodavatelů automobilek
+
+20 března 2024 Ještě před nedávnem by bylo téměř automatické, že dodavatelé automobilek by měli svou výrobu přeorientovat na elektromobilitu.</p>
+      <p class="full-content" id="full23" style="display:none;">Sophiina volba dodavatelů automobilek
 
 20 března 2024
 
@@ -1723,14 +1706,9 @@ uzavírá Martin Buranský.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2024/sophiina-volba-dodavatelu-automobilek" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary23', this)">
+        onclick="toggleFullContent(23, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 23)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1739,6 +1717,11 @@ uzavírá Martin Buranský.</p>
       <p class="date">01.03.2024</p>
       <hr/>
       <p class="summary" id="summary24">Čtvrtá průmyslová revoluce teprve začíná
+
+1 března 2024
+
+Společnost Moore Global naznačila ve své analýze hlavní trendy roku 2024 v oblasti průmyslové výroby a distribuce. Jsou jimi umělá inteligence a pokročilé analytické nástroje, které nabízí nové příležitosti pro optimalizaci výroby a rozhodování založené na datech.</p>
+      <p class="full-content" id="full24" style="display:none;">Čtvrtá průmyslová revoluce teprve začíná
 
 1 března 2024
 
@@ -1787,14 +1770,9 @@ uzavírá Marcela Hrdá.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2024/ctvrta-prumyslova-revoluce-teprve-zacina" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary24', this)">
+        onclick="toggleFullContent(24, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 24)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1803,6 +1781,13 @@ uzavírá Marcela Hrdá.</p>
       <p class="date">09.02.2024</p>
       <hr/>
       <p class="summary" id="summary25">Technologie ve financích výrazně zrychlují, hlavní roli hraje umělá inteligence
+
+9 února 2024
+
+Tempo technologických změn v segmentu finančních služeb výrazně zrychluje
+
+a sektor se dostal do čela zavádění umělé inteligence, strojového učení a blockchainu.</p>
+      <p class="full-content" id="full25" style="display:none;">Technologie ve financích výrazně zrychlují, hlavní roli hraje umělá inteligence
 
 9 února 2024
 
@@ -1865,14 +1850,9 @@ doplňuje Martin Buranský, partner Moore Czech Republic.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/unor-2024/technologie-ve-financich-vyrazne-zrychluji" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary25', this)">
+        onclick="toggleFullContent(25, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 25)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1881,6 +1861,13 @@ doplňuje Martin Buranský, partner Moore Czech Republic.</p>
       <p class="date">24.01.2024</p>
       <hr/>
       <p class="summary" id="summary26">Komunitní energetika může změnit Česko
+
+24 ledna 2024
+
+Stát podporuje energetickou transformaci měst a obcí
+
+V závěru loňského roku Poslanecká sněmovna i Senát schválily přelomovou novelu energetického zákona známou jako Lex OZE II, která České republice otevřela cestu k rozvoji komunitní energetiky. Jedním z prvních kroků měst a obcí, který umožňuje nastartování komunitní energetiky, je zpracování místní energetické koncepce.</p>
+      <p class="full-content" id="full26" style="display:none;">Komunitní energetika může změnit Česko
 
 24 ledna 2024
 
@@ -1925,14 +1912,9 @@ uzavírá Tomáš Křapáček, manažer, Moore Advisory CZ.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2024/komunitni-energetika-muze-zmenit-cesko" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary26', this)">
+        onclick="toggleFullContent(26, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 26)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -1941,6 +1923,11 @@ uzavírá Tomáš Křapáček, manažer, Moore Advisory CZ.</p>
       <p class="date">18.01.2024</p>
       <hr/>
       <p class="summary" id="summary27">Hybridní práce zvyšuje produktivitu firem
+
+18 ledna 2024
+
+Podle výzkumu společnosti Moore Global má hybridní způsob práce pozitivní dopad na produktivitu. Shodli se na tom zástupci většiny středně velkých firem v klíčových ekonomikách světa.</p>
+      <p class="full-content" id="full27" style="display:none;">Hybridní práce zvyšuje produktivitu firem
 
 18 ledna 2024
 
@@ -2009,14 +1996,9 @@ Průzkum zahrnoval podniky působící v Austrálii, Brazílii, Francii, Německ
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2024/hybridni-prace-zvysuje-produktivitu-firem" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary27', this)">
+        onclick="toggleFullContent(27, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 27)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2025,6 +2007,11 @@ Průzkum zahrnoval podniky působící v Austrálii, Brazílii, Francii, Německ
       <p class="date">27.12.2023</p>
       <hr/>
       <p class="summary" id="summary28">Zvýšení daní pro firmy a změny ve výhodách pro rodiny: Co nás čeká v novém roce 2024
+
+27 prosince 2023
+
+Vstupujeme do roku 2024, který bude rokem řady daňových změn. Od zvýšení sazby daně z příjmů právnických osob až po omezení daňových výhod pro rodiny a zaměstnance - tyto a další změny budou mít rozsáhlý dopad na ekonomický život v České republice.</p>
+      <p class="full-content" id="full28" style="display:none;">Zvýšení daní pro firmy a změny ve výhodách pro rodiny: Co nás čeká v novém roce 2024
 
 27 prosince 2023
 
@@ -2161,14 +2148,9 @@ Omezení nároku na odpočet u pořízení osobních automobilů – maximálně
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2023/zvyseni-dani-pro-firmy-a-zmeny-ve-vyhodach" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary28', this)">
+        onclick="toggleFullContent(28, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 28)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2177,6 +2159,11 @@ Omezení nároku na odpočet u pořízení osobních automobilů – maximálně
       <p class="date">10.12.2023</p>
       <hr/>
       <p class="summary" id="summary29">Přínosy umělé inteligence pro byznys rostou a spolu s tím také investice do ní
+
+10 prosince 2023
+
+Nová studie Moore Global ukazuje, že umělá inteligence (AI) se stává klíčovou součástí růstové strategie mnoha společností. Tři čtvrtiny velkých a středních firem po celém světě v posledních čtyřech letech zvýšilo své investice do umělé inteligence, čímž potvrzuje rostoucí zájem o tuto technologii v byznysu.</p>
+      <p class="full-content" id="full29" style="display:none;">Přínosy umělé inteligence pro byznys rostou a spolu s tím také investice do ní
 
 10 prosince 2023
 
@@ -2235,14 +2222,9 @@ Společnost Moore Global zjišťovala ve své analýze postoje k umělé intelig
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2023/prinosy-umele-inteligence-pro-byznys" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary29', this)">
+        onclick="toggleFullContent(29, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 29)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2251,6 +2233,13 @@ Společnost Moore Global zjišťovala ve své analýze postoje k umělé intelig
       <p class="date">05.12.2023</p>
       <hr/>
       <p class="summary" id="summary30">Ochrana oznamovatelů: 42 % zaměstnanců se obává odvetných opatření
+
+5 prosince 2023
+
+Přes čtyři měsíce již platí nový zákon o ochraně oznamovatelů zavádějící klíčové změny u firem s více než 250 zaměstnanci. Podle výzkumu společnosti Moore Czech Republic, avšak pouze
+
+44 % zaměstnanců v těchto firmách ví o povinnosti zavedení vnitřních oznamovacích systémů.</p>
+      <p class="full-content" id="full30" style="display:none;">Ochrana oznamovatelů: 42 % zaměstnanců se obává odvetných opatření
 
 5 prosince 2023
 
@@ -2347,14 +2336,9 @@ Výzkum se uskutečnil koncem listopadu 2023 na reprezentativním vzorku české
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2023/ochrana-oznamovatelu-42-zamestnancu-se-obava-odvet" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary30', this)">
+        onclick="toggleFullContent(30, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 30)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2363,6 +2347,11 @@ Výzkum se uskutečnil koncem listopadu 2023 na reprezentativním vzorku české
       <p class="date">27.11.2023</p>
       <hr/>
       <p class="summary" id="summary31">Analýza MOORE CZ: pobytové sociální služby by měly více dbát na požární ochranu
+
+27 listopadu 2023
+
+Tato tisková zpráva nahrazuje tiskovou zprávu uveřejněnou dne 3. 7. 2023, ve které byly uvedeny některé nepřesné (zavádějící) údaje. Odborníci z Moore věří, že větší důraz na požární ochranu v pobytových zařízeních sociálních služeb může pomoci předcházet tragickým událostem.</p>
+      <p class="full-content" id="full31" style="display:none;">Analýza MOORE CZ: pobytové sociální služby by měly více dbát na požární ochranu
 
 27 listopadu 2023
 
@@ -2393,14 +2382,9 @@ zde
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2023/pobytove-socialni-sluzby-pozarni-ochrana" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary31', this)">
+        onclick="toggleFullContent(31, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 31)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2409,6 +2393,11 @@ zde
       <p class="date">02.11.2023</p>
       <hr/>
       <p class="summary" id="summary32">Udržitelnost jako klíč k vyšším tržbám a udržení zaměstnanců
+
+2 listopadu 2023
+
+Poslední roky přinesly mnoho změn nejen do globální ekonomiky. Jednou z nich je i proměna způsobu, jakým podniky nahlížejí na svou roli v ekonomice a společnosti jako celku.</p>
+      <p class="full-content" id="full32" style="display:none;">Udržitelnost jako klíč k vyšším tržbám a udržení zaměstnanců
 
 2 listopadu 2023
 
@@ -2477,14 +2466,9 @@ V celém vzorku 84 % podniků uvedlo, že od roku 2019 mají ESG témata v jejic
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2023/udrzitelnost-jako-klic-k-vyssim-trzbam" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary32', this)">
+        onclick="toggleFullContent(32, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 32)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2493,6 +2477,13 @@ V celém vzorku 84 % podniků uvedlo, že od roku 2019 mají ESG témata v jejic
       <p class="date">12.10.2023</p>
       <hr/>
       <p class="summary" id="summary33">8 z 10 rodičů by se vrátilo dříve do práce, kdyby jejich zaměstnavatel poskytoval firemní školku či dětskou skupinu
+
+12 října 2023
+
+Vyplývá to z výzkumu, který realizovala poradenská skupina Moore Czech Republic. [1]
+
+Podle expertů z Moore v dnešní době přehřátého trhu práce s rekordně nízkou nezaměstnaností čelí mnoho firem výzvě udržet talentované zaměstnance.</p>
+      <p class="full-content" id="full33" style="display:none;">8 z 10 rodičů by se vrátilo dříve do práce, kdyby jejich zaměstnavatel poskytoval firemní školku či dětskou skupinu
 
 12 října 2023
 
@@ -2543,14 +2534,9 @@ Výzkum byl realizován v srpnu 2023 prostřednictvím platformy Instant Resear
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2023/8-z-10-rodicu-by-se-vratilo-drive-do-prace" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary33', this)">
+        onclick="toggleFullContent(33, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 33)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2559,6 +2545,11 @@ Výzkum byl realizován v srpnu 2023 prostřednictvím platformy Instant Resear
       <p class="date">19.09.2023</p>
       <hr/>
       <p class="summary" id="summary34">První postřehy implementace zákona o ochraně oznamovatelů: zaskočené školy a přešlapující malé firmy
+
+19 září 2023
+
+Nový zákon o ochraně oznamovatelů tzv. „whistleblowerů" nabyl účinnosti 1.</p>
+      <p class="full-content" id="full34" style="display:none;">První postřehy implementace zákona o ochraně oznamovatelů: zaskočené školy a přešlapující malé firmy
 
 19 září 2023
 
@@ -2619,14 +2610,9 @@ uzavírá Petr Štětka, senior manager z poradenské skupiny Moore Czech Repub
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/zari-2023/zakon-o-ochrane-oznamovatele" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary34', this)">
+        onclick="toggleFullContent(34, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 34)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2635,6 +2621,13 @@ uzavírá Petr Štětka, senior manager z poradenské skupiny Moore Czech Repub
       <p class="date">31.08.2023</p>
       <hr/>
       <p class="summary" id="summary35">Blockhain mění finanční služby. Rychlejší a levnější platby jsou ale energeticky náročné
+
+Milan Kříž
+
+31 srpna 2023
+
+Blockchainové technologie mají potenciálně rozsáhlé využití ve finančních službách.</p>
+      <p class="full-content" id="full35" style="display:none;">Blockhain mění finanční služby. Rychlejší a levnější platby jsou ale energeticky náročné
 
 Milan Kříž
 
@@ -2677,14 +2670,9 @@ dodává Ewen Fleming.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/srpen-2023/blockhain" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary35', this)">
+        onclick="toggleFullContent(35, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 35)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2693,6 +2681,9 @@ dodává Ewen Fleming.</p>
       <p class="date">21.08.2023</p>
       <hr/>
       <p class="summary" id="summary36">Nezaměstnanost je nízká, ale česká ekonomika strádá. Proč potřebujeme cizince a flexibilní pracovní podmínky?
+
+21 srpna 2023</p>
+      <p class="full-content" id="full36" style="display:none;">Nezaměstnanost je nízká, ale česká ekonomika strádá. Proč potřebujeme cizince a flexibilní pracovní podmínky?
 
 21 srpna 2023
 
@@ -2767,14 +2758,9 @@ www.moore-global.com
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/srpen-2023/nezamestnanost-je-nizka-ale" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary36', this)">
+        onclick="toggleFullContent(36, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 36)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2783,6 +2769,11 @@ www.moore-global.com
       <p class="date">03.08.2023</p>
       <hr/>
       <p class="summary" id="summary37">Umělá inteligence zvýší kvalitu a efektivitu právních služeb, je ovšem potřeba dbát na ochranu dat
+
+3 srpna 2023
+
+Právní kanceláře začínají využívat služeb umělé inteligence. Ta mimo jiné rozšíří možnosti práce s textem, zrychlí vyhledávání informací a stane se pro právníky důležitým nástrojem.</p>
+      <p class="full-content" id="full37" style="display:none;">Umělá inteligence zvýší kvalitu a efektivitu právních služeb, je ovšem potřeba dbát na ochranu dat
 
 3 srpna 2023
 
@@ -2827,14 +2818,9 @@ komentuje Jan Kubica.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/srpen-2023/umela-inteligence-zvysi-kvalitu-a-efektivitu" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary37', this)">
+        onclick="toggleFullContent(37, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 37)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2843,6 +2829,11 @@ komentuje Jan Kubica.</p>
       <p class="date">27.07.2023</p>
       <hr/>
       <p class="summary" id="summary38">Český trh fúzí a akvizic po útlumu opět nabírá dech, investory po období krizí zajímá odolnost firem
+
+27 července 2023
+
+Podle odborníků z poradenské skupiny Moore Czech Republic se v průběhu tohoto roku opět začíná zvyšovat aktivita na poli fúzí a akvizic. Následkem pandemie a války na Ukrajině je však patrná větší rozvážnost investorů.</p>
+      <p class="full-content" id="full38" style="display:none;">Český trh fúzí a akvizic po útlumu opět nabírá dech, investory po období krizí zajímá odolnost firem
 
 27 července 2023
 
@@ -2893,14 +2884,9 @@ uzavírá Ondřej Kolman z poradenské skupiny Moore Czech Republic.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2023/cesky-trh-fuzi" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary38', this)">
+        onclick="toggleFullContent(38, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 38)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2909,6 +2895,11 @@ uzavírá Ondřej Kolman z poradenské skupiny Moore Czech Republic.</p>
       <p class="date">20.07.2023</p>
       <hr/>
       <p class="summary" id="summary39">Využití umělé inteligence rozhodne o úspěchu ve výrobě a distribuci, investice do ní se v tomto sektoru během čtyř let zdvojnásobí
+
+20 července 2023
+
+Odborníci z poradenské skupiny Moore Global předpovídají, že v sektoru výroby a distribuce uspějí firmy, které se zaměří na disruptivní technologie, především pak na umělou inteligenci. Do té investovaly společnosti po celém světě v roce 2020 zhruba 50 miliard dolarů.</p>
+      <p class="full-content" id="full39" style="display:none;">Využití umělé inteligence rozhodne o úspěchu ve výrobě a distribuci, investice do ní se v tomto sektoru během čtyř let zdvojnásobí
 
 20 července 2023
 
@@ -2961,14 +2952,9 @@ https://www.spcr.cz/pro-media/tiskove-zpravy/15741-pruzkum-sp-cr-firmy-resi-digi
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2023/vyuziti-umele-inteligence" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary39', this)">
+        onclick="toggleFullContent(39, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 39)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -2977,6 +2963,11 @@ https://www.spcr.cz/pro-media/tiskove-zpravy/15741-pruzkum-sp-cr-firmy-resi-digi
       <p class="date">03.07.2023</p>
       <hr/>
       <p class="summary" id="summary40">Tři ze čtyř zaměstnanců chtějí čtyřdenní pracovní týden. Zájem je vyšší než před dvěma roky
+
+3 července 2023
+
+Bezmála polovina českých zaměstnanců by určitě souhlasila se zavedením čtyřdenního pracovního týdne, dalších zhruba 28 % uvádí, že by spíše souhlasila.</p>
+      <p class="full-content" id="full40" style="display:none;">Tři ze čtyř zaměstnanců chtějí čtyřdenní pracovní týden. Zájem je vyšší než před dvěma roky
 
 3 července 2023
 
@@ -3029,14 +3020,9 @@ Průzkum byl realizován prostřednictvím aplikace Instant Research agentury Ip
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2023/ctyrdenni-pracovni-tyden" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary40', this)">
+        onclick="toggleFullContent(40, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 40)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3045,6 +3031,11 @@ Průzkum byl realizován prostřednictvím aplikace Instant Research agentury Ip
       <p class="date">29.06.2023</p>
       <hr/>
       <p class="summary" id="summary41">Umělá inteligence nevezme lidem práci, ale zefektivní ji. Pomůže například při náborovém procesu
+
+29 června 2023
+
+Desítky procent Čechů se obávají, že kvůli umělé inteligenci přijdou o práci.</p>
+      <p class="full-content" id="full41" style="display:none;">Umělá inteligence nevezme lidem práci, ale zefektivní ji. Pomůže například při náborovém procesu
 
 29 června 2023
 
@@ -3095,14 +3086,9 @@ zavírá Martin Buranský.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2023/umela-inteligence-nevezme-lidem-praci" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary41', this)">
+        onclick="toggleFullContent(41, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 41)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3111,6 +3097,11 @@ zavírá Martin Buranský.</p>
       <p class="date">25.06.2023</p>
       <hr/>
       <p class="summary" id="summary42">Zdanění nefinančních benefitů způsobí tlak na růst mezd. Stíží také firmám nábor
+
+25 června 2023
+
+Omezení daňového zvýhodnění nepeněžních benefitů v rámci připravovaného konsolidačního balíčku vlády může nepříznivě ovlivnit český trh práce, a tedy i ekonomiku.</p>
+      <p class="full-content" id="full42" style="display:none;">Zdanění nefinančních benefitů způsobí tlak na růst mezd. Stíží také firmám nábor
 
 25 června 2023
 
@@ -3139,14 +3130,9 @@ uzavírá Petr Kymlička.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2023/zdaneni-nefinancnich-benefitu" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary42', this)">
+        onclick="toggleFullContent(42, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 42)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3155,6 +3141,11 @@ uzavírá Petr Kymlička.</p>
       <p class="date">06.06.2023</p>
       <hr/>
       <p class="summary" id="summary43">Moore Advisory CZ: stát může úpravou plateb za pobyt v pobytových zařízeních sociálních služeb ušetřit až 337 milionů ročně
+
+6 června 2023
+
+Úpravou platebních podmínek za vybraná pobytová zařízení sociálních služeb by státní rozpočet mohl ušetřit až 337 milionů korun ročně. Vyplývá to z analýzy Ministerstva práce a sociálních věcí, kterou vypracovala poradenská skupina Moore Advisory CZ.</p>
+      <p class="full-content" id="full43" style="display:none;">Moore Advisory CZ: stát může úpravou plateb za pobyt v pobytových zařízeních sociálních služeb ušetřit až 337 milionů ročně
 
 6 června 2023
 
@@ -3195,14 +3186,9 @@ dodává závěrem Tomáš Křapáček.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2023/moore-advisory-cz-stat-muze-usetrit" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary43', this)">
+        onclick="toggleFullContent(43, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 43)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3211,6 +3197,11 @@ dodává závěrem Tomáš Křapáček.</p>
       <p class="date">01.06.2023</p>
       <hr/>
       <p class="summary" id="summary44">Skupina Moore koupila střední školu, navazuje na trend spolupráce zaměstnavatelů se školami
+
+1 června 2023
+
+Poradenská skupina Moore Czech Republic odkoupila stoprocentní podíl ve Střední škole Spektrum, která se nachází v Mladé Boleslavi. Pro skupinu se jedná o další krok v její dlouhodobé podpoře oblastí počátečního a dalšího vzdělávání.</p>
+      <p class="full-content" id="full44" style="display:none;">Skupina Moore koupila střední školu, navazuje na trend spolupráce zaměstnavatelů se školami
 
 1 června 2023
 
@@ -3257,14 +3248,9 @@ uzavírá Radovan Hauk.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2023/skupina-moore-koupila-stredni-skolu,-navazuje-na-t" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary44', this)">
+        onclick="toggleFullContent(44, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 44)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3273,6 +3259,11 @@ uzavírá Radovan Hauk.</p>
       <p class="date">30.05.2023</p>
       <hr/>
       <p class="summary" id="summary45">Hlavní trendy ve finančnictví – digitalizace, AI a udržitelnost
+
+30 května 2023
+
+Zájem investorů o startupy podnikající ve fintech sektoru klesá. Upozorňují na to experti z poradenské skupiny Moore Global, a mírní tak očekávání revolučních změn v oblasti financí.</p>
+      <p class="full-content" id="full45" style="display:none;">Hlavní trendy ve finančnictví – digitalizace, AI a udržitelnost
 
 30 května 2023
 
@@ -3317,14 +3308,9 @@ vysvětluje Ewen Fleming.
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2023/hlavni-trendy-ve-financnictvi" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary45', this)">
+        onclick="toggleFullContent(45, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 45)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3332,7 +3318,14 @@ vysvětluje Ewen Fleming.
       <h2>Národní soustava kvalifikací pomáhá těm, kdo chtějí lepší práci.  Povědomí o ní stoupá</h2>
       <p class="date">22.05.2023</p>
       <hr/>
-      <p class="summary" id="summary46">Národní soustava kvalifikací pomáhá těm, kdo chtějí lepší práci.  Povědomí o ní stoupá
+      <p class="summary" id="summary46">Národní soustava kvalifikací pomáhá těm, kdo chtějí lepší práci. Povědomí o ní stoupá
+
+22 května 2023
+
+Na podzim 2021 a začátkem roku 2023 v rámci projektu UpSkilling, který realizuje Národní pedagogický institut ČR (NPI), proběhlo 1. a 2. kolo zatím největšího dotazníkového šetření, které se zabývalo
+
+zjišťováním znalostí a úrovně povědomí o Národní soustavě kvalifikací (NSK) u cílových skupin – školy, Úřad práce a vybraní zaměstnavatelé.</p>
+      <p class="full-content" id="full46" style="display:none;">Národní soustava kvalifikací pomáhá těm, kdo chtějí lepší práci.  Povědomí o ní stoupá
 
 22 května 2023
 
@@ -3367,14 +3360,9 @@ Je nutné dále pokračovat v těchto aktivitách, jako jsou výše zmiňované 
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2023/narodni-soustava-kvalifikaci" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary46', this)">
+        onclick="toggleFullContent(46, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 46)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3383,6 +3371,11 @@ Je nutné dále pokračovat v těchto aktivitách, jako jsou výše zmiňované 
       <p class="date">16.05.2023</p>
       <hr/>
       <p class="summary" id="summary47">Cestovní ruch se loni zotavil z Covidu, letos poroste. Posílí hlavně zavedené značky
+
+16 května 2023
+
+Podle odborníků z poradenské skupiny Moore Global přinesl rok 2022 v sektoru cestovního ruchu zotavení z pandemické krize.</p>
+      <p class="full-content" id="full47" style="display:none;">Cestovní ruch se loni zotavil z Covidu, letos poroste. Posílí hlavně zavedené značky
 
 16 května 2023
 
@@ -3435,14 +3428,9 @@ https://www.ceskenoviny.cz/zpravy/prijmy-cr-z-cestovniho-ruchu-loni-vzrostly-o-5
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2023/cestovni-ruch" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary47', this)">
+        onclick="toggleFullContent(47, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 47)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3451,6 +3439,13 @@ https://www.ceskenoviny.cz/zpravy/prijmy-cr-z-cestovniho-ruchu-loni-vzrostly-o-5
       <p class="date">03.05.2023</p>
       <hr/>
       <p class="summary" id="summary48">Oznamovatelé ušetří firmám peníze a zlepší firemní kulturu. Oznamovací systém je ale potřeba budovat již nyní
+
+Milan Kříž
+
+3 května 2023
+
+Průtahy kolem zavedení směrnice EU o ochraně oznamovatelů do českého právního řádu jsou komplikací nejen pro Českou republiku, kterou kvůli tomu Evropská komise zažalovala.</p>
+      <p class="full-content" id="full48" style="display:none;">Oznamovatelé ušetří firmám peníze a zlepší firemní kulturu. Oznamovací systém je ale potřeba budovat již nyní
 
 Milan Kříž
 
@@ -3513,14 +3508,9 @@ Tedy směrnici Evropského parlamentu a Rady EU 2019/1937 o ochraně osob, kter�
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2023/oznamovatele-usetri-firmam-penize" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary48', this)">
+        onclick="toggleFullContent(48, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 48)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3529,6 +3519,11 @@ Tedy směrnici Evropského parlamentu a Rady EU 2019/1937 o ochraně osob, kter�
       <p class="date">03.05.2023</p>
       <hr/>
       <p class="summary" id="summary49">Big data umožní optimalizaci výroby elektřiny. Novým trendem budou komunitní elektrárny
+
+3 května 2023
+
+Odborníci z poradenské sítě Moore Global považují dodržování principů ESG (environmental, social and governance)</p>
+      <p class="full-content" id="full49" style="display:none;">Big data umožní optimalizaci výroby elektřiny. Novým trendem budou komunitní elektrárny
 
 3 května 2023
 
@@ -3565,14 +3560,9 @@ vysvětluje Miroslav Rut, partner Moore Technology CZ.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2023/big-data-umozni-optimalizaci-vyroby-elektriny" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary49', this)">
+        onclick="toggleFullContent(49, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 49)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3581,6 +3571,13 @@ vysvětluje Miroslav Rut, partner Moore Technology CZ.</p>
       <p class="date">31.03.2023</p>
       <hr/>
       <p class="summary" id="summary50">Pavel Drobil se stává novým partnerem v poradenské skupině Moore Czech Republic
+
+Milan Kříž
+
+31 března 2023
+
+Řady partnerů skupiny Moore Czech Republic rozšířil od března Pavel Drobil (51). V rámci své působnosti se bude věnovat zejména projektům v oblasti energetiky a průmyslové výroby.</p>
+      <p class="full-content" id="full50" style="display:none;">Pavel Drobil se stává novým partnerem v poradenské skupině Moore Czech Republic
 
 Milan Kříž
 
@@ -3607,14 +3604,9 @@ Je absolventem Právnické fakulty Masarykovy univerzity v Brně. Ve volném č
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2023/pavel-drobil-se-stava-novym-partnerem-v-poradenske" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary50', this)">
+        onclick="toggleFullContent(50, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 50)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3623,6 +3615,13 @@ Je absolventem Právnické fakulty Masarykovy univerzity v Brně. Ve volném č
       <p class="date">30.03.2023</p>
       <hr/>
       <p class="summary" id="summary51">Virtuální elektrárny promění trh s energiemi. V budoucnu mohou v Česku produkovat až 25 % elektřiny
+
+Milan Kříž
+
+30 března 2023
+
+Po přijetí náležité legislativy se virtuální elektrárny stanou důležitou součástí energetické soustavy.</p>
+      <p class="full-content" id="full51" style="display:none;">Virtuální elektrárny promění trh s energiemi. V budoucnu mohou v Česku produkovat až 25 % elektřiny
 
 Milan Kříž
 
@@ -3659,14 +3658,9 @@ vysvětluje Miloslav Rut a doplňuje, že v Česku nyní existují dodavatelé 
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2023/virtualni-elektrarny" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary51', this)">
+        onclick="toggleFullContent(51, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 51)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3675,6 +3669,11 @@ vysvětluje Miloslav Rut a doplňuje, že v Česku nyní existují dodavatelé 
       <p class="date">18.03.2023</p>
       <hr/>
       <p class="summary" id="summary52">Budoucností jsou zelená města. Praha ve srovnání s ostatními evropskými metropolemi zaostává
+
+18 března 2023
+
+Podle expertů poradenské skupiny Moore Czech Republic budou pro budoucí vývoj měst rozhodující koncepce tzv.</p>
+      <p class="full-content" id="full52" style="display:none;">Budoucností jsou zelená města. Praha ve srovnání s ostatními evropskými metropolemi zaostává
 
 18 března 2023
 
@@ -3719,14 +3718,9 @@ https://www.arcadis.com/campaigns/scmi/index.html</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2023/budoucnosti-jsou-zelena-mesta" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary52', this)">
+        onclick="toggleFullContent(52, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 52)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3735,6 +3729,13 @@ https://www.arcadis.com/campaigns/scmi/index.html</p>
       <p class="date">10.03.2023</p>
       <hr/>
       <p class="summary" id="summary53">Patříte mezi 80 % těch, kteří dosud nepodali daňové přiznání? Máte ještě více než 2 týdny, ale mohou to být také skoro 4 měsíce
+
+Radim Darebník
+
+10 března 2023
+
+Podle nejaktuálnějších informací Finanční správy bylo dosud podáno půl milionu daňových přiznání, tedy necelých 20 % z předpokládaného celkového počtu.</p>
+      <p class="full-content" id="full53" style="display:none;">Patříte mezi 80 % těch, kteří dosud nepodali daňové přiznání? Máte ještě více než 2 týdny, ale mohou to být také skoro 4 měsíce
 
 Radim Darebník
 
@@ -3771,14 +3772,9 @@ uzavírá expert na daně z Moore Accounting CZ Martin Pech.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2023/danove-priznani-2022" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary53', this)">
+        onclick="toggleFullContent(53, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 53)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3786,7 +3782,8 @@ uzavírá expert na daně z Moore Accounting CZ Martin Pech.</p>
       <h2>Důsledek ruské agrese. Podíl Ruska na celkovém vývozu z EU klesl od loňského února o víc než polovinu</h2>
       <p class="date">23.02.2023</p>
       <hr/>
-      <p class="summary" id="summary54">Důsledek ruské agrese. Podíl Ruska na celkovém vývozu z EU klesl od loňského února o víc než polovinu
+      <p class="summary" id="summary54">Důsledek ruské agrese. Podíl Ruska na celkovém vývozu z EU</p>
+      <p class="full-content" id="full54" style="display:none;">Důsledek ruské agrese. Podíl Ruska na celkovém vývozu z EU klesl od loňského února o víc než polovinu
 
 23 února 2023
 
@@ -3823,14 +3820,9 @@ https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20230125-2</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/unor-2023/dusledek-ruske-agrese" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary54', this)">
+        onclick="toggleFullContent(54, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 54)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3839,6 +3831,11 @@ https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20230125-2</p>
       <p class="date">23.02.2023</p>
       <hr/>
       <p class="summary" id="summary55">Firmy stále více spolupracují se školami. Vychovávají si tak budoucí zaměstnance
+
+23 února 2023
+
+V současnosti výrazně sílí snaha českých firem spolupracovat s vysokými i středními školami.</p>
+      <p class="full-content" id="full55" style="display:none;">Firmy stále více spolupracují se školami. Vychovávají si tak budoucí zaměstnance
 
 23 února 2023
 
@@ -3885,14 +3882,9 @@ Skupina má v rámci vzdělávání a spoluprací se školami další plány. J
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/unor-2023/firmy-stale-vice-spolupracuji-se-skolami" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary55', this)">
+        onclick="toggleFullContent(55, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 55)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3901,6 +3893,9 @@ Skupina má v rámci vzdělávání a spoluprací se školami další plány. J
       <p class="date">14.02.2023</p>
       <hr/>
       <p class="summary" id="summary56">Sting nabízí 100%  stipendium a snovou kariéru
+
+14 února 2023 Představte si, že získáte praxi v atraktivní společnosti už při škole, vyděláte si peníze a navíc za vás firma ještě zaplatí školné.</p>
+      <p class="full-content" id="full56" style="display:none;">Sting nabízí 100%  stipendium a snovou kariéru
 
 14 února 2023
 
@@ -3969,14 +3964,9 @@ dodává Jiří Koleňák.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/unor-2023/sting-kariera" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary56', this)">
+        onclick="toggleFullContent(56, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 56)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -3985,6 +3975,9 @@ dodává Jiří Koleňák.</p>
       <p class="date">07.02.2023</p>
       <hr/>
       <p class="summary" id="summary57">Novým partnerem poradenské skupiny Moore Czech Republic se stává Martin Buranský
+
+7 února 2023 Poradenská skupina Moore Czech Republic posiluje od začátku února své vedení.</p>
+      <p class="full-content" id="full57" style="display:none;">Novým partnerem poradenské skupiny Moore Czech Republic se stává Martin Buranský
 
 7 února 2023
 
@@ -4009,14 +4002,9 @@ Oblasti manažerského poradenství se do současné doby věnovali zejména par
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/unor-2023/novy-partner" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary57', this)">
+        onclick="toggleFullContent(57, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 57)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4025,6 +4013,11 @@ Oblasti manažerského poradenství se do současné doby věnovali zejména par
       <p class="date">19.01.2023</p>
       <hr/>
       <p class="summary" id="summary58">Rok 2021 ve znamení zvýšené spotřeby energie. Česko zaznamenalo 3. nejvyšší nárůst v Unii
+
+19 ledna 2023
+
+Koncová spotřeba energie</p>
+      <p class="full-content" id="full58" style="display:none;">Rok 2021 ve znamení zvýšené spotřeby energie. Česko zaznamenalo 3. nejvyšší nárůst v Unii
 
 19 ledna 2023
 
@@ -4071,14 +4064,9 @@ https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20221219-4?lan
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2023/spotreba-energie-cesko" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary58', this)">
+        onclick="toggleFullContent(58, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 58)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4087,6 +4075,11 @@ https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20221219-4?lan
       <p class="date">17.01.2023</p>
       <hr/>
       <p class="summary" id="summary59">Digitalizace je budoucností finančního sektoru. Česko v ní ovšem zaostává
+
+17 ledna 2023
+
+Z nedávného přehledu společnosti McKinsey & Company vyplývá, že 51 procent bank má rentabilitu vlastního kapitálu nižší než náklady na vlastní kapitál.</p>
+      <p class="full-content" id="full59" style="display:none;">Digitalizace je budoucností finančního sektoru. Česko v ní ovšem zaostává
 
 17 ledna 2023
 
@@ -4129,14 +4122,9 @@ https://www.moore-global.com/intelligence/articles/july-2022/a-radical-new-agend
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2023/digitalizace-je-budoucnosti" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary59', this)">
+        onclick="toggleFullContent(59, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 59)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4145,6 +4133,11 @@ https://www.moore-global.com/intelligence/articles/july-2022/a-radical-new-agend
       <p class="date">16.01.2023</p>
       <hr/>
       <p class="summary" id="summary60">Průzkum mezi OSVČ: Stát jim zřizuje datové schránky, většina z nich s tím počítá
+
+16 ledna 2023
+
+V průběhu prvního čtvrtletí zřídí stát všem OSVČ elektronickou datovou schránku a bude s nimi komunikovat výhradně jejím prostřednictvím.</p>
+      <p class="full-content" id="full60" style="display:none;">Průzkum mezi OSVČ: Stát jim zřizuje datové schránky, většina z nich s tím počítá
 
 16 ledna 2023
 
@@ -4183,14 +4176,9 @@ Průzkum si nechala zpracovat poradenská skupina Moore Czech Republic prostřed
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2023/pruzkum-datove-schranky" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary60', this)">
+        onclick="toggleFullContent(60, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 60)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4199,6 +4187,11 @@ Průzkum si nechala zpracovat poradenská skupina Moore Czech Republic prostřed
       <p class="date">15.12.2022</p>
       <hr/>
       <p class="summary" id="summary61">Nový systém paušální daně: Překročení limitu o tisíc korun může znamenat navýšení odvodů až o 120 tisíc
+
+15 prosince 2022
+
+Nedávno přijatá novela zákona o daních z příjmů počítá se zvýšením limitu příjmů OSVČ pro zapojení do režimu paušální daně. Kromě toho zavádí pásmový systém, podle kterého budou podnikatelé platit různou výši paušální daně v závislosti na svých příjmech.</p>
+      <p class="full-content" id="full61" style="display:none;">Nový systém paušální daně: Překročení limitu o tisíc korun může znamenat navýšení odvodů až o 120 tisíc
 
 15 prosince 2022
 
@@ -4239,14 +4232,9 @@ Překročení limitu příjmů o tisíc korun může znamenat navýšení odvod�
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2022/pausalni-dane" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary61', this)">
+        onclick="toggleFullContent(61, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 61)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4255,6 +4243,11 @@ Překročení limitu příjmů o tisíc korun může znamenat navýšení odvod�
       <p class="date">01.12.2022</p>
       <hr/>
       <p class="summary" id="summary62">Zhoršení financování, omezení investic a propouštění. To vše čeká tuzemské podniky v následujících měsících
+
+1 prosince 2022
+
+České firmy se v následujících měsících budou potýkat s důsledky očekávané recese.</p>
+      <p class="full-content" id="full62" style="display:none;">Zhoršení financování, omezení investic a propouštění. To vše čeká tuzemské podniky v následujících měsících
 
 1 prosince 2022
 
@@ -4309,14 +4302,9 @@ https://www.czso.cz/csu/czso/inflace_spotrebitelske_ceny</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2022/zhorseni-financovani" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary62', this)">
+        onclick="toggleFullContent(62, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 62)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4325,6 +4313,11 @@ https://www.czso.cz/csu/czso/inflace_spotrebitelske_ceny</p>
       <p class="date">21.11.2022</p>
       <hr/>
       <p class="summary" id="summary63">Firmám kladoucím důraz na ESG rostou příjmy dvakrát rychleji. Lépe se daří i jejich akciím
+
+21 listopadu 2022
+
+Odborníci z Moore Czech Republic navíc upozorňují, že mezi českými firmami není o ESG dostatečné povědomí.</p>
+      <p class="full-content" id="full63" style="display:none;">Firmám kladoucím důraz na ESG rostou příjmy dvakrát rychleji. Lépe se daří i jejich akciím
 
 21 listopadu 2022
 
@@ -4365,14 +4358,9 @@ https://www.mooreglobal.com/MediaLibsAndFiles/media/MooreStephens2020/Documents/
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2022/esg" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary63', this)">
+        onclick="toggleFullContent(63, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 63)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4381,6 +4369,13 @@ https://www.mooreglobal.com/MediaLibsAndFiles/media/MooreStephens2020/Documents/
       <p class="date">12.10.2022</p>
       <hr/>
       <p class="summary" id="summary64">Výhoda české ekonomiky: Malé podniky tvoří 35 % přidané hodnoty
+
+Radim Darebník
+
+12 října 2022
+
+O 4 procentní body nad průměrem EU jsou v tomto směru tuzemské střední firmy s 50 až 249 zaměstnanci, které tvoří zhruba 21 % přidané hodnoty. Na velké společnosti připadá zbývajících 44 %.</p>
+      <p class="full-content" id="full64" style="display:none;">Výhoda české ekonomiky: Malé podniky tvoří 35 % přidané hodnoty
 
 Radim Darebník
 
@@ -4413,14 +4408,9 @@ https://ec.europa.eu/eurostat/en/web/products-eurostat-news/-/edn-20220627-1</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2022/vyhoda-ceske-ekonomiky" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary64', this)">
+        onclick="toggleFullContent(64, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 64)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4429,6 +4419,13 @@ https://ec.europa.eu/eurostat/en/web/products-eurostat-news/-/edn-20220627-1</p>
       <p class="date">05.10.2022</p>
       <hr/>
       <p class="summary" id="summary65">České investice do výzkumu a vývoje zaostávají za průměrem EU
+
+Radim Darebník
+
+5 října 2022
+
+Průměr sedmadvacítky byl ve zmíněném období mnohem vyšší, a to 244,3 euro. Česko také zaznamenalo v loňském roce podprůměrné meziroční zvýšení investic.</p>
+      <p class="full-content" id="full65" style="display:none;">České investice do výzkumu a vývoje zaostávají za průměrem EU
 
 Radim Darebník
 
@@ -4475,14 +4472,9 @@ https://www.czso.cz/csu/czso/stat-investoval-do-vyzkumu-a-vyvoje-v-poslednich-de
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2022/ceske-investice-do-vyzkumu" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary65', this)">
+        onclick="toggleFullContent(65, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 65)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4491,6 +4483,13 @@ https://www.czso.cz/csu/czso/stat-investoval-do-vyzkumu-a-vyvoje-v-poslednich-de
       <p class="date">20.09.2022</p>
       <hr/>
       <p class="summary" id="summary66">Skupina Moore Czech Republic opět skokově roste – vstoupila do společností Bene Factum, HZConsult a Audikon
+
+Radim Darebník
+
+20 září 2022
+
+Díky akvizici dochází k významnému posílení zejména divize Moore Audit CZ, která se tímto krokem dostává mezi top 10 auditních společností v České republice. Akvizice společnosti Bene Factum současně otvírá úplně novou oblast působení skupiny Moore Czech Republic – znaleckou činnost.</p>
+      <p class="full-content" id="full66" style="display:none;">Skupina Moore Czech Republic opět skokově roste – vstoupila do společností Bene Factum, HZConsult a Audikon
 
 Radim Darebník
 
@@ -4525,14 +4524,9 @@ Společnosti Bene Factum, HZConsult a Audikon rozšiřují skupinu Moore Czech R
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/zari-2022/moore-roste" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary66', this)">
+        onclick="toggleFullContent(66, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 66)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4541,6 +4535,15 @@ Společnosti Bene Factum, HZConsult a Audikon rozšiřují skupinu Moore Czech R
       <p class="date">06.09.2022</p>
       <hr/>
       <p class="summary" id="summary67">ČESKO ZAOSTÁVÁ V UMĚLÉ INTELIGENCI, POUŽÍVAJÍ JI JEN 4 % FIREM
+
+Radim Darebník
+
+6 září 2022
+
+V České republice se jednalo pouze o 4 % firem. 1
+
+Podle odborníků z poradenské skupiny Moore Czech Republic je přitom umělá inteligence klíčovou složkou digitální transformace hospodářství a je správné, že umělou inteligenci podporuje stát v rámci Národního plánu obnovy.</p>
+      <p class="full-content" id="full67" style="display:none;">ČESKO ZAOSTÁVÁ V UMĚLÉ INTELIGENCI, POUŽÍVAJÍ JI JEN 4 % FIREM
 
 Radim Darebník
 
@@ -4605,14 +4608,9 @@ https://ec.europa.eu/eurostat/en/web/products-eurostat-news/-/ddn-20220609-1</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/zari-2022/ai-cesko" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary67', this)">
+        onclick="toggleFullContent(67, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 67)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4621,6 +4619,11 @@ https://ec.europa.eu/eurostat/en/web/products-eurostat-news/-/ddn-20220609-1</p>
       <p class="date">05.09.2022</p>
       <hr/>
       <p class="summary" id="summary68">Cestovní ruch po dvouletém útlumu ožil. Aktuální hrozbou je ekonomická recese a vysoká míra inflace
+
+5 září 2022
+
+Podle Světové organizace cestovního ruchu by se měla celosvětová mezinárodní osobní doprava letos meziročně zvýšit o 30–78 %.</p>
+      <p class="full-content" id="full68" style="display:none;">Cestovní ruch po dvouletém útlumu ožil. Aktuální hrozbou je ekonomická recese a vysoká míra inflace
 
 5 září 2022
 
@@ -4689,14 +4692,9 @@ https://www.czso.cz/csu/czso/modul_zamestnanosti_cestovniho_ruchu</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/zari-2022/tz_cestovni_ruch" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary68', this)">
+        onclick="toggleFullContent(68, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 68)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4705,6 +4703,13 @@ https://www.czso.cz/csu/czso/modul_zamestnanosti_cestovniho_ruchu</p>
       <p class="date">04.08.2022</p>
       <hr/>
       <p class="summary" id="summary69">Návrat na předpandemickou úroveň HDP se nedaří. ČR je v rámci EU pátá nejhorší
+
+Radim Darebník
+
+4 srpna 2022
+
+Na konci roku 2021 totiž dosahovala výše tuzemského HDP pouze 97,8 % hodnoty z konce roku 2019.</p>
+      <p class="full-content" id="full69" style="display:none;">Návrat na předpandemickou úroveň HDP se nedaří. ČR je v rámci EU pátá nejhorší
 
 Radim Darebník
 
@@ -4749,14 +4754,9 @@ https://www.statista.com/statistics/1104709/coronavirus-deaths-worldwide-per-mil
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/srpen-2022/hdp_covid" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary69', this)">
+        onclick="toggleFullContent(69, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 69)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4765,6 +4765,11 @@ https://www.statista.com/statistics/1104709/coronavirus-deaths-worldwide-per-mil
       <p class="date">19.07.2022</p>
       <hr/>
       <p class="summary" id="summary70">České samosprávy se učí lépe plánovat. Vzorem je Spojené království
+
+19 července 2022
+
+Podle poradenské společnosti Moore Advisory CZ, která ve městech inovativní nástroje testovala, dozná strategické plánování krajů, měst a obcí v horizontu následujících 5 let dynamických změn.</p>
+      <p class="full-content" id="full70" style="display:none;">České samosprávy se učí lépe plánovat. Vzorem je Spojené království
 
 19 července 2022
 
@@ -4813,14 +4818,9 @@ www.verejne-strategie.cz
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2022/ceske-samospravy-planovani" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary70', this)">
+        onclick="toggleFullContent(70, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 70)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4829,6 +4829,11 @@ www.verejne-strategie.cz
       <p class="date">13.07.2022</p>
       <hr/>
       <p class="summary" id="summary71">NOVÝM GENERÁLNÍM ŘEDITELEM SPOLEČNOSTI SERVODATA SE STÁVÁ ROMAN KONEČNÝ
+
+13 července 2022
+
+Navzdory změně na pozici generálního ředitele zůstává zachována kontinuita fungování společnosti, na jejím dalším rozvoji se budou podílet oba pánové v nových rolích. Hlavním úkolem pro nastupujícího generálního ředitele bude rozvíjet nově nastavené směřování společnosti.</p>
+      <p class="full-content" id="full71" style="display:none;">NOVÝM GENERÁLNÍM ŘEDITELEM SPOLEČNOSTI SERVODATA SE STÁVÁ ROMAN KONEČNÝ
 
 13 července 2022
 
@@ -4855,14 +4860,9 @@ Společnost Servodata a.s. působí na českém trhu již 26 let. Jejím záměr
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2022/servodata_novyreditel" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary71', this)">
+        onclick="toggleFullContent(71, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 71)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4871,6 +4871,11 @@ Společnost Servodata a.s. působí na českém trhu již 26 let. Jejím záměr
       <p class="date">22.06.2022</p>
       <hr/>
       <p class="summary" id="summary72">O ESG slyšela jen čtvrtina manažerů. Od příštího roku se bude týkat tisíců firem
+
+22 června 2022
+
+Vyplývá to z průzkumu, který si nechala zpracovat poradenská skupina Moore Czech Republic.</p>
+      <p class="full-content" id="full72" style="display:none;">O ESG slyšela jen čtvrtina manažerů. Od příštího roku se bude týkat tisíců firem
 
 22 června 2022
 
@@ -4931,14 +4936,9 @@ https://eur-lex.europa.eu/legal-content/CS/TXT/PDF/?uri=CELEX:52021PC0189&from=F
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2022/o_esg" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary72', this)">
+        onclick="toggleFullContent(72, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 72)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4947,6 +4947,11 @@ https://eur-lex.europa.eu/legal-content/CS/TXT/PDF/?uri=CELEX:52021PC0189&from=F
       <p class="date">21.06.2022</p>
       <hr/>
       <p class="summary" id="summary73">U veřejnosti není o kvóty zájem. Pro jejich zavedení je méně než 25 %
+
+21 června 2022
+
+Šest z deseti se přitom kloní k názoru, že větší množství žen ve vedení podniku je prospěšné pro jeho fungování.</p>
+      <p class="full-content" id="full73" style="display:none;">U veřejnosti není o kvóty zájem. Pro jejich zavedení je méně než 25 %
 
 21 června 2022
 
@@ -4981,14 +4986,9 @@ Oslovení se k zavedení kvót staví odmítavě i přesto, že považují vět�
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2022/kvoty" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary73', this)">
+        onclick="toggleFullContent(73, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 73)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -4997,6 +4997,11 @@ Oslovení se k zavedení kvót staví odmítavě i přesto, že považují vět�
       <p class="date">07.06.2022</p>
       <hr/>
       <p class="summary" id="summary74">Na zvýšení minimální mzdy o 2 tisíce není prostor. Firmy přesto připlácí samy od sebe
+
+7 června 2022
+
+Firmy vedle rostoucích cen surovin a vyšších úrokových sazeb mohou čelit další nákladové hrozbě v podobě vynuceně vyšších mezd.</p>
+      <p class="full-content" id="full74" style="display:none;">Na zvýšení minimální mzdy o 2 tisíce není prostor. Firmy přesto připlácí samy od sebe
 
 7 června 2022
 
@@ -5025,14 +5030,9 @@ uzavírá s tím, že případné legislativní sjednocení se nebude týkat š
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2022/tz_minimalni_mzda" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary74', this)">
+        onclick="toggleFullContent(74, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 74)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5041,6 +5041,13 @@ uzavírá s tím, že případné legislativní sjednocení se nebude týkat š
       <p class="date">03.06.2022</p>
       <hr/>
       <p class="summary" id="summary75">Zrušení EET je krok zpět. Stát by měl podpořit alespoň dobrovolný režim evidence
+
+Radim Darebník
+
+3 června 2022
+
+Současně přijde o možnost průběžného sledování stavu ekonomiky v jednotlivých oblastech podnikání a regionech republiky.</p>
+      <p class="full-content" id="full75" style="display:none;">Zrušení EET je krok zpět. Stát by měl podpořit alespoň dobrovolný režim evidence
 
 Radim Darebník
 
@@ -5069,14 +5076,9 @@ Podporou alespoň dobrovolného režimu elektronické evidence tržeb lze navíc
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2022/zruseni-eet" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary75', this)">
+        onclick="toggleFullContent(75, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 75)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5085,6 +5087,11 @@ Podporou alespoň dobrovolného režimu elektronické evidence tržeb lze navíc
       <p class="date">03.06.2022</p>
       <hr/>
       <p class="summary" id="summary76">Inflace snižuje aktivitu v oblasti fúzí a akvizic. Investoři v nejisté době mění své rozhodování
+
+Radim Darebník
+
+3 června</p>
+      <p class="full-content" id="full76" style="display:none;">Inflace snižuje aktivitu v oblasti fúzí a akvizic. Investoři v nejisté době mění své rozhodování
 
 Radim Darebník
 
@@ -5131,14 +5138,9 @@ https://www.czso.cz/csu/czso/cri/indexy-spotrebitelskych-cen-inflace-duben-2022<
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2022/inflace-snizuje-aktivitu-v-oblasti-fuzi-a-akvizic" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary76', this)">
+        onclick="toggleFullContent(76, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 76)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5147,6 +5149,13 @@ https://www.czso.cz/csu/czso/cri/indexy-spotrebitelskych-cen-inflace-duben-2022<
       <p class="date">25.05.2022</p>
       <hr/>
       <p class="summary" id="summary77">Ceny rostou, limit pro DPP ne. Zvýšení by pomohlo ohroženým skupinám a přispělo k flexibilitě pracovního trhu
+
+Radim Darebník
+
+25 května 2022
+
+Právě tento smluvní vztah kvůli flexibilitě často uzavírají matky samoživitelky či důchodci.</p>
+      <p class="full-content" id="full77" style="display:none;">Ceny rostou, limit pro DPP ne. Zvýšení by pomohlo ohroženým skupinám a přispělo k flexibilitě pracovního trhu
 
 Radim Darebník
 
@@ -5179,14 +5188,9 @@ Přestože se o zvýšení limitu hovoří ve vlnách několik posledních let, 
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2022/ceny-rostou,-limit-pro-dpp-ne-zvyseni-by-pomohlo-o" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary77', this)">
+        onclick="toggleFullContent(77, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 77)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5195,6 +5199,13 @@ Přestože se o zvýšení limitu hovoří ve vlnách několik posledních let, 
       <p class="date">03.05.2022</p>
       <hr/>
       <p class="summary" id="summary78">Česká ochrana klimatu je v rámci Evropské unie pozadu. Železnici ale využíváme nadprůměrně
+
+Radim Darebník
+
+3 května 2022
+
+Vyplývá to z dat Eurostatu sbíraných mezi lety 2009 a 2020.</p>
+      <p class="full-content" id="full78" style="display:none;">Česká ochrana klimatu je v rámci Evropské unie pozadu. Železnici ale využíváme nadprůměrně
 
 Radim Darebník
 
@@ -5227,14 +5238,9 @@ Nad průměrem evropských států se Česká republika drží ve srovnáních, 
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2022/ceska-ochrana-klimatu-je-v-ramci-evropske-unie-poz" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary78', this)">
+        onclick="toggleFullContent(78, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 78)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5243,6 +5249,11 @@ Nad průměrem evropských států se Česká republika drží ve srovnáních, 
       <p class="date">27.04.2022</p>
       <hr/>
       <p class="summary" id="summary79">MOORE CZECH REPUBLIC ZASTŘEŠUJE POMOC ASIJSKÝM SPOLEČNOSTEM NA EVROPSKÉM TRHU
+
+27 dubna 2022
+
+Úlohou nově vytvořeného útvaru EU-Asia Desk je poskytování pomoci a poradenství u obchodních aktivit asijských společností na evropském trhu. V roce 2022 bude nový útvar pomáhat v obchodních aktivitách desítkám evropských společností s vlastníky z Číny, Japonska a Jižní Korey.</p>
+      <p class="full-content" id="full79" style="display:none;">MOORE CZECH REPUBLIC ZASTŘEŠUJE POMOC ASIJSKÝM SPOLEČNOSTEM NA EVROPSKÉM TRHU
 
 27 dubna 2022
 
@@ -5269,14 +5280,9 @@ https://www.moore-eu-asia.com/
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2022/tz_moore_asia" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary79', this)">
+        onclick="toggleFullContent(79, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 79)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5285,6 +5291,13 @@ https://www.moore-eu-asia.com/
       <p class="date">22.04.2022</p>
       <hr/>
       <p class="summary" id="summary80">Trh marketingových technologií loni celosvětově přesáhl hodnotu 340 miliard dolarů
+
+Radim Darebník
+
+22 dubna 2022
+
+Podle očekávání expertů dojde také v roce 2022 k výraznému růstu celého odvětví. Investice do marketingových technologií plánuje navýšit až 61 % oslovených firem.</p>
+      <p class="full-content" id="full80" style="display:none;">Trh marketingových technologií loni celosvětově přesáhl hodnotu 340 miliard dolarů
 
 Radim Darebník
 
@@ -5325,14 +5338,9 @@ Martech Report 2021/2022</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2022/trh-marketingovych-technologii-loni-celosvetove-pr" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary80', this)">
+        onclick="toggleFullContent(80, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 80)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5341,6 +5349,13 @@ Martech Report 2021/2022</p>
       <p class="date">05.04.2022</p>
       <hr/>
       <p class="summary" id="summary81">Moore Czech Republic posílila účetní a daňové poradenství. Koupila společnost Alfin
+
+Radim Darebník
+
+5 dubna 2022
+
+Její odborníci posílí stávající tým Moore Accounting CZ, která tak rozšíří svoji regionální přítomnost v Ústeckém kraji.</p>
+      <p class="full-content" id="full81" style="display:none;">Moore Czech Republic posílila účetní a daňové poradenství. Koupila společnost Alfin
 
 Radim Darebník
 
@@ -5371,14 +5386,9 @@ uzavírá Hrdá.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2022/moore-czech-republic-posilila-ucetni-a-danove-pora" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary81', this)">
+        onclick="toggleFullContent(81, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 81)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5387,6 +5397,13 @@ uzavírá Hrdá.</p>
       <p class="date">31.03.2022</p>
       <hr/>
       <p class="summary" id="summary82">Až 60 % organizací vyžaduje nadbytečný souhlas se zpracováním osobních údajů
+
+Radim Darebník
+
+31 března 2022
+
+Nadbytečný souhlas se zpracováním osobních údajů pak podle odborníků z poradenské skupiny Moore Czech Republic vyžaduje 60 % organizací, nejčastěji se s to týká veřejnoprávních institucí jako jsou školy, školky i obce. I za toto počítání přitom hrozí sankce.</p>
+      <p class="full-content" id="full82" style="display:none;">Až 60 % organizací vyžaduje nadbytečný souhlas se zpracováním osobních údajů
 
 Radim Darebník
 
@@ -5419,14 +5436,9 @@ uzavírá Petr Štětka.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2022/az-60-organizaci-vyzaduje-nadbytecny-souhlas-se-zp" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary82', this)">
+        onclick="toggleFullContent(82, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 82)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5435,6 +5447,13 @@ uzavírá Petr Štětka.</p>
       <p class="date">11.03.2022</p>
       <hr/>
       <p class="summary" id="summary83">Českému trhu práce pomůže otevření zahraničním pracovníkům a přijetí systémových změn
+
+Radim Darebník
+
+11 března 2022
+
+Nejvíce jsou podle odborníků z poradenské skupiny Moore Czech Republic zasaženy sektory zdravotnictví, IT, průmysl, logistika a gastronomie. Řada zaměstnavatelů navíc s ohledem na návrat Ukrajinců do vlasti řeší akutní výpadek dalších pracovních sil.</p>
+      <p class="full-content" id="full83" style="display:none;">Českému trhu práce pomůže otevření zahraničním pracovníkům a přijetí systémových změn
 
 Radim Darebník
 
@@ -5481,14 +5500,9 @@ uzavírá Radovan Hauk.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2022/ceskemu-trhu-prace-pomuze-otevreni-zahranicnim-pra" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary83', this)">
+        onclick="toggleFullContent(83, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 83)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5497,6 +5511,13 @@ uzavírá Radovan Hauk.</p>
       <p class="date">03.03.2022</p>
       <hr/>
       <p class="summary" id="summary84">V Česku se za minulý rok zdvojnásobil počet podniků, které využívají cloud. Šlo o nejvyšší nárůst v EU
+
+Radim Darebník
+
+3 března 2022
+
+Odborníci na kyberbezpečnost z Moore Technology CZ však varují, že cloudová nebo hybridní řešení, která se nejčastěji využívají pro práci na home office, zvyšují počet zranitelných přístupových bodů.</p>
+      <p class="full-content" id="full84" style="display:none;">V Česku se za minulý rok zdvojnásobil počet podniků, které využívají cloud. Šlo o nejvyšší nárůst v EU
 
 Radim Darebník
 
@@ -5541,14 +5562,9 @@ upřesňuje Rut a dodává, že firmy věnující preventivní pozornost kyberbe
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2022/v-cesku-se-za-minuly-rok-zdvojnasobil-pocet-podnik" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary84', this)">
+        onclick="toggleFullContent(84, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 84)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5557,6 +5573,11 @@ upřesňuje Rut a dodává, že firmy věnující preventivní pozornost kyberbe
       <p class="date">08.02.2022</p>
       <hr/>
       <p class="summary" id="summary85">Standard zajišťující fungování cílené online reklamy byl v Belgii označen za protiprávní. Dopady mohou nastat i v Česku
+
+Radim Darebník
+
+8 února</p>
+      <p class="full-content" id="full85" style="display:none;">Standard zajišťující fungování cílené online reklamy byl v Belgii označen za protiprávní. Dopady mohou nastat i v Česku
 
 Radim Darebník
 
@@ -5583,14 +5604,9 @@ uzavírá Jan Kubica s tím, že v tuto chvíli má organizace IAB Europe mož
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/unor-2022/standard-zajistujici-fungovani-cilene-online-rekla" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary85', this)">
+        onclick="toggleFullContent(85, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 85)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5599,6 +5615,13 @@ uzavírá Jan Kubica s tím, že v tuto chvíli má organizace IAB Europe mož
       <p class="date">06.01.2022</p>
       <hr/>
       <p class="summary" id="summary86">Průzkum kyberbezpečnosti firem: Každá pátá firma čelila útoku. Systematické prevenci se věnuje pouze čtvrtina
+
+Radim Darebník
+
+6 ledna 2022
+
+Pouze čtvrtina oslovených společností se však snaží problémům předcházet pomocí auditů a testování své IT bezpečnosti.</p>
+      <p class="full-content" id="full86" style="display:none;">Průzkum kyberbezpečnosti firem: Každá pátá firma čelila útoku. Systematické prevenci se věnuje pouze čtvrtina
 
 Radim Darebník
 
@@ -5635,14 +5658,9 @@ uzavírá Martin Listopad</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2022/pruzkum-kyberbezpecnosti-firem-kazda-pata-firma-ce" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary86', this)">
+        onclick="toggleFullContent(86, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 86)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5651,6 +5669,13 @@ uzavírá Martin Listopad</p>
       <p class="date">21.12.2021</p>
       <hr/>
       <p class="summary" id="summary87">Počet kybernetických útoků se téměř zdvojnásobil. Nejohroženější jsou lidé na homeoffice
+
+Radim Darebník
+
+21 prosince 2021
+
+Podle odborníků na kyberbezpečnost ze společnosti Doxologic zneužívají útočníci situaci okolo pandemie covid-19, která přesunula velkou část zaměstnanců na homeoffice a jejich zařízení se tak stala jednodušeji napadnutelná.</p>
+      <p class="full-content" id="full87" style="display:none;">Počet kybernetických útoků se téměř zdvojnásobil. Nejohroženější jsou lidé na homeoffice
 
 Radim Darebník
 
@@ -5685,14 +5710,9 @@ uvádí Martin Listopad a dodává:
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2021/pocet-kybernetickych-utoku-se-temer-zdvojnasobil-n" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary87', this)">
+        onclick="toggleFullContent(87, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 87)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5701,6 +5721,13 @@ uvádí Martin Listopad a dodává:
       <p class="date">04.12.2021</p>
       <hr/>
       <p class="summary" id="summary88">ČR nestihne schválit legislativu k whistleblowingu včas. Některé subjekty přesto musí být připraveny
+
+Radim Darebník
+
+4 prosince 2021
+
+Nová legislativa v podobě zákona o ochraně oznamovatelů by měla chránit tzv.</p>
+      <p class="full-content" id="full88" style="display:none;">ČR nestihne schválit legislativu k whistleblowingu včas. Některé subjekty přesto musí být připraveny
 
 Radim Darebník
 
@@ -5759,14 +5786,9 @@ Status oznamovatele (whistleblowera) a ochrana s tímto statusem spojená, je s
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2021/cr-nestihne-schvalit-legislativu-k-whistleblowingu" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary88', this)">
+        onclick="toggleFullContent(88, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 88)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5775,6 +5797,11 @@ Status oznamovatele (whistleblowera) a ochrana s tímto statusem spojená, je s
       <p class="date">30.11.2021</p>
       <hr/>
       <p class="summary" id="summary89">Řada organizací stále nemá řádně vyřešeno GDPR. Nejčastější chybou je nadbytečné vyžadování souhlasu
+
+30 listopadu 2021
+
+Přestože jejich počet není možné přesně vyčíslit, odborníci z poradenské skupiny Moore Czech Republic, která je správcem osobních údajů pro téměř 300 organizací, upozorňují, že řadě z nich hrozí sankce.</p>
+      <p class="full-content" id="full89" style="display:none;">Řada organizací stále nemá řádně vyřešeno GDPR. Nejčastější chybou je nadbytečné vyžadování souhlasu
 
 30 listopadu 2021
 
@@ -5817,14 +5844,9 @@ uzavírá dále Štětka. Běžného občana se přitom nařízení GDPR dotklo 
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2021/rada-organizaci-stale-nema-radne-vyreseno-gdpr-nej" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary89', this)">
+        onclick="toggleFullContent(89, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 89)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5833,6 +5855,13 @@ uzavírá dále Štětka. Běžného občana se přitom nařízení GDPR dotklo 
       <p class="date">15.11.2021</p>
       <hr/>
       <p class="summary" id="summary90">Vládní investice do výzkumu a vývoje výrazně vzrostly, přesto je ČR za průměrem EU
+
+Radim Darebník
+
+15 listopadu 2021
+
+Navzdory výraznému růstu v posledních letech dosahovala tato částka v České republice v roce 2020 128 eur na osobu a výrazně zaostávala pod průměrem EU.</p>
+      <p class="full-content" id="full90" style="display:none;">Vládní investice do výzkumu a vývoje výrazně vzrostly, přesto je ČR za průměrem EU
 
 Radim Darebník
 
@@ -5891,14 +5920,9 @@ Data Eurostatu</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2021/vladni-investice-do-vyzkumu-a-vyvoje-vyrazne-vzros" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary90', this)">
+        onclick="toggleFullContent(90, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 90)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5907,6 +5931,13 @@ Data Eurostatu</p>
       <p class="date">01.11.2021</p>
       <hr/>
       <p class="summary" id="summary91">Úplné zrušení EET nedává smysl. Nabízí se podpořit alespoň dobrovolnou evidenci
+
+Radim Darebník
+
+1 listopadu 2021
+
+Podle odborníků z poradenské skupiny Moore Czech Republic si tak stát dobrovolně odřízl nástroj pro snadnou alokaci dotací v návaznosti na výši evidovaných tržeb a zbavil se možnosti průběžného sledování stavu ekonomiky v jednotlivých oblastech podnikání a regionech republiky.</p>
+      <p class="full-content" id="full91" style="display:none;">Úplné zrušení EET nedává smysl. Nabízí se podpořit alespoň dobrovolnou evidenci
 
 Radim Darebník
 
@@ -5947,14 +5978,9 @@ Na konci roku 2016 zavedla dosud úřadující vláda elektronickou evidenci tr�
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2021/uplne-zruseni-eet-nedava-smysl-nabizi-se-podporit" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary91', this)">
+        onclick="toggleFullContent(91, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 91)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -5963,6 +5989,13 @@ Na konci roku 2016 zavedla dosud úřadující vláda elektronickou evidenci tr�
       <p class="date">25.10.2021</p>
       <hr/>
       <p class="summary" id="summary92">9 z 10 ICT profesionálů jsou v ČR muži. Přilákat více žen dává smysl
+
+Radim Darebník
+
+25 října 2021
+
+Odborníci společnosti MoorenTechnology poukazují na fakt, že přestože za poslední desetiletí zaznamenalo Českonnejvětší nárůst počtu žen v</p>
+      <p class="full-content" id="full92" style="display:none;">9 z 10 ICT profesionálů jsou v ČR muži. Přilákat více žen dává smysl
 
 Radim Darebník
 
@@ -5991,14 +6024,9 @@ https://ec.europa.eu/eurostat/web/products-eurostat-news/-/ddn-20210916-1</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2021/9-z 10-ict-profesionalu-jsou-v-cr-muzi-prilakat-vi" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary92', this)">
+        onclick="toggleFullContent(92, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 92)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6007,6 +6035,13 @@ https://ec.europa.eu/eurostat/web/products-eurostat-news/-/ddn-20210916-1</p>
       <p class="date">14.10.2021</p>
       <hr/>
       <p class="summary" id="summary93">Odvolávky jako strašák subdodavatelů v autoprůmyslu. Už za čtvrt roku se mohou dostavit existenční problémy
+
+Radim Darebník
+
+14 října 2021
+
+Zatímco průmyslová produkce v srpnu podle údajů ČSÚ meziročně klesla o 1,4 %, odvětví výroby motorových vozidel, přívěsů a návěsů o více než 28 %.</p>
+      <p class="full-content" id="full93" style="display:none;">Odvolávky jako strašák subdodavatelů v autoprůmyslu. Už za čtvrt roku se mohou dostavit existenční problémy
 
 Radim Darebník
 
@@ -6045,14 +6080,9 @@ uzavírá Petr Kymlička.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2021/odvolavky-jako-strasak-subdodavatelu-v-autoprumysl" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary93', this)">
+        onclick="toggleFullContent(93, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 93)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6061,6 +6091,13 @@ uzavírá Petr Kymlička.</p>
       <p class="date">14.10.2021</p>
       <hr/>
       <p class="summary" id="summary94">Erik Ďurkáň se stává novým partnerem poradenské skupiny Moore Czech Republic
+
+Radim Darebník
+
+14 října 2021
+
+Erik Ďurkáň se od září 2021 stal partnerem zodpovědným za oblast auditních služeb v poradenské skupině Moore Czech Republic, která je členem Moore Global, jedné z největších mezinárodních sítí auditorských a poradenských společností. Erik Ďurkáň se zde bude jako partner soustřeďovat na strategické směřování skupiny v oblasti poskytováni auditních a souvisejících služeb s cílem ukotvit Moore Audit CZ jako jednu z deseti největších auditních společností na tuzemském trhu.</p>
+      <p class="full-content" id="full94" style="display:none;">Erik Ďurkáň se stává novým partnerem poradenské skupiny Moore Czech Republic
 
 Radim Darebník
 
@@ -6075,14 +6112,9 @@ Erik Ďurkáň je absolventem VŠE, Fakulty financí a účetnictví, držitelem
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2021/erik-durkan-se-stava-novym-partnerem-poradenske-sk" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary94', this)">
+        onclick="toggleFullContent(94, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 94)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6091,6 +6123,13 @@ Erik Ďurkáň je absolventem VŠE, Fakulty financí a účetnictví, držitelem
       <p class="date">16.09.2021</p>
       <hr/>
       <p class="summary" id="summary95">Exkluzivní průzkum: 2/3 firem a podnikatelů neočekávají po zbytek roku omezení ze strany státu
+
+Radim Darebník
+
+16 září 2021
+
+Současně jich 66 % pro zbytek roku nepřipravuje protiepidemická opatření, pokud jim to vláda nenařídí nebo nedoporučí. Společnosti, které z vlastní vůle realizují vlastní preventivní opatření, nejčastěji přistupují k testování zaměstnanců a umožnění práce z domova.</p>
+      <p class="full-content" id="full95" style="display:none;">Exkluzivní průzkum: 2/3 firem a podnikatelů neočekávají po zbytek roku omezení ze strany státu
 
 Radim Darebník
 
@@ -6129,14 +6168,9 @@ Průzkum realizovaný od 2. do 7. září mezi 315 soukromými podnikateli, řed
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/zari-2021/exkluzivni-pruzkum-2-3-firem-a-podnikatelu-neoceka" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary95', this)">
+        onclick="toggleFullContent(95, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 95)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6145,6 +6179,13 @@ Průzkum realizovaný od 2. do 7. září mezi 315 soukromými podnikateli, řed
       <p class="date">23.08.2021</p>
       <hr/>
       <p class="summary" id="summary96">Podprůměrný růst HDP ve druhém čtvrtletí. Česká ekonomika se zotavuje pomaleji než naprostá většina zemí EU
+
+Radim Darebník
+
+23 srpna 2021
+
+Nejde přitom o ojedinělý výkyv – horší růst či pokles, než je průměr EU, zaznamenala Česká republika již čtyři kvartály za sebou.</p>
+      <p class="full-content" id="full96" style="display:none;">Podprůměrný růst HDP ve druhém čtvrtletí. Česká ekonomika se zotavuje pomaleji než naprostá většina zemí EU
 
 Radim Darebník
 
@@ -6169,14 +6210,9 @@ Dle analýzy Moore Czech Republic lze příčinu tohoto vývoje spatřovat zejm�
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/srpen-2021/podprumerny-rust-hdp-ve-druhem-ctvrtleti-ceska-eko" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary96', this)">
+        onclick="toggleFullContent(96, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 96)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6184,7 +6220,8 @@ Dle analýzy Moore Czech Republic lze příčinu tohoto vývoje spatřovat zejm�
       <h2>Výkon českého průmyslu byl v červnu nad průměrem EU. Lepší výsledky brzdí nedostatek pracovníků i vstupů.</h2>
       <p class="date">15.08.2021</p>
       <hr/>
-      <p class="summary" id="summary97">Výkon českého průmyslu byl v červnu nad průměrem EU. Lepší výsledky brzdí nedostatek pracovníků i vstupů.
+      <p class="summary" id="summary97">Výkon českého průmyslu byl v červnu nad průměrem EU. Lepší výsledky brzdí nedostatek pracovníků i vstupů.</p>
+      <p class="full-content" id="full97" style="display:none;">Výkon českého průmyslu byl v červnu nad průměrem EU. Lepší výsledky brzdí nedostatek pracovníků i vstupů.
 
 Radim Darebník
 
@@ -6215,14 +6252,9 @@ https://ec.europa.eu/eurostat/documents/2995521/11563223/4-12082021-AP-EN.pdf/57
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/srpen-2021/vykon-ceskeho-prumyslu-byl-v cervnu-nad-prumerem-e" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary97', this)">
+        onclick="toggleFullContent(97, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 97)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6231,6 +6263,13 @@ https://ec.europa.eu/eurostat/documents/2995521/11563223/4-12082021-AP-EN.pdf/57
       <p class="date">28.07.2021</p>
       <hr/>
       <p class="summary" id="summary98">Růst českého dluhu v prvním čtvrtletí byl druhý nejvyšší v EU. Více prohloubil zadlužení pouze Kypr
+
+Radim Darebník
+
+28 července 2021
+
+Podle poradenské společnosti Moore Czech Republic byla hlavní příčinou nezvládnutá epidemiologická situace covid-19.</p>
+      <p class="full-content" id="full98" style="display:none;">Růst českého dluhu v prvním čtvrtletí byl druhý nejvyšší v EU. Více prohloubil zadlužení pouze Kypr
 
 Radim Darebník
 
@@ -6265,14 +6304,9 @@ Eurostat</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2021/rust-ceskeho-dluhu-v-prvnim-ctvrtleti-byl-druhy-ne" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary98', this)">
+        onclick="toggleFullContent(98, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 98)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6281,6 +6315,11 @@ Eurostat</p>
       <p class="date">27.07.2021</p>
       <hr/>
       <p class="summary" id="summary99">Růst cen hypoték pokračuje. Česko se blíží k deseti zemím EU s nejvyšší průměrnou sazbou
+
+Radim Darebník
+
+27 července 2021</p>
+      <p class="full-content" id="full99" style="display:none;">Růst cen hypoték pokračuje. Česko se blíží k deseti zemím EU s nejvyšší průměrnou sazbou
 
 Radim Darebník
 
@@ -6305,14 +6344,9 @@ Nejdražší hypoteční úrokové sazby má podle dat theglobaleconomy.com Loty
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2021/rust-cen-hypotek-pokracuje-cesko-se-blizi-k-deseti" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary99', this)">
+        onclick="toggleFullContent(99, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 99)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6321,6 +6355,13 @@ Nejdražší hypoteční úrokové sazby má podle dat theglobaleconomy.com Loty
       <p class="date">14.07.2021</p>
       <hr/>
       <p class="summary" id="summary100">Ukončení Antiviru se do nezaměstnanosti nepromítlo. Programy pomohly zachovat 100 tisíc míst
+
+Radim Darebník
+
+14 července 2021
+
+Podle analýzy odborníků z poradenské skupiny Moore Czech Republic se na statistice takřka vůbec neprojevilo ukončení dvou částí programu Antivirus z konce května.</p>
+      <p class="full-content" id="full100" style="display:none;">Ukončení Antiviru se do nezaměstnanosti nepromítlo. Programy pomohly zachovat 100 tisíc míst
 
 Radim Darebník
 
@@ -6349,14 +6390,9 @@ Výpočet proběhl na základě vzorce tzv. Okunova zákona.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2021/ukonceni-antiviru-se-do-nezamestnanosti-nepromitlo" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary100', this)">
+        onclick="toggleFullContent(100, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 100)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -6364,7 +6400,12 @@ Výpočet proběhl na základě vzorce tzv. Okunova zákona.</p>
       <h2>Zadlužení ČR nevzrostlo v roce 2020 zásadněji než v ostatních zemích Visegrádské čtyřky</h2>
       <p class="date">01.07.2021</p>
       <hr/>
-      <p class="summary" id="summary101">Zadlužení ČR nevzrostlo v roce 2020 zásadněji než v ostatních zemích Visegrádské čtyřky
+      <p class="summary" id="summary101">Zadlužení ČR nevzrostlo v roce 2020 zásadněji než v ostatních zemích Visegrádské čtyřky Ondřej Hubatka
+
+1 července 2021
+
+V rámci celé Evropské unie se jedná o 4.</p>
+      <p class="full-content" id="full101" style="display:none;">Zadlužení ČR nevzrostlo v roce 2020 zásadněji než v ostatních zemích Visegrádské čtyřky
 
 Ondřej Hubatka
 
@@ -7039,14 +7080,9 @@ Zdroj: Eurostat</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2021/zadluzeni-cr-nevzrostlo-v-roce-2020-zasadneji-nez" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary101', this)">
+        onclick="toggleFullContent(101, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 101)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7055,6 +7091,13 @@ Zdroj: Eurostat</p>
       <p class="date">17.06.2021</p>
       <hr/>
       <p class="summary" id="summary102">Srovnání fiskálních opatření zemí Visegrádské čtyřky: V přepočtu na obyvatele vynaložila Česká republika v boji s covid-19 druhá nejvíce
+
+Radim Darebník
+
+17 června 2021
+
+Výrazná část pomoci plynula do ekonomiky jako podpora likvidity v podobě záruk a garancí, naopak v rámci nadlimitních opatření ČR uvolnila pouze sumu ve výši 5,4 % HDP. Méně ze zemí V4 jenom Slovensko, a to 4,4</p>
+      <p class="full-content" id="full102" style="display:none;">Srovnání fiskálních opatření zemí Visegrádské čtyřky: V přepočtu na obyvatele vynaložila Česká republika v boji s covid-19 druhá nejvíce
 
 Radim Darebník
 
@@ -7081,14 +7124,9 @@ vysvětluje Radovan Hauk a na závěr dodává:
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2021/srovnani-fiskalnich-opatreni-zemi-visegradske-ctyr" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary102', this)">
+        onclick="toggleFullContent(102, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 102)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7097,6 +7135,13 @@ vysvětluje Radovan Hauk a na závěr dodává:
       <p class="date">10.06.2021</p>
       <hr/>
       <p class="summary" id="summary103">Datovou schránku nově dostanou další právnické osoby i živnostníci
+
+Radim Darebník
+
+10 června 2021
+
+Významnou novinkou je rozšíření okruhu osob, kterým bude datová schránka zřízena automaticky, bez jejich žádosti. Podle odborníků společnosti Moore Legal CZ bude mít automatické zřízení datových schránek pro výše uvedené osoby podstatný vliv nejen na způsob doručování dokumentů těmto osobám od úřadů (či jiných osob), ale může to pro ně zakládat povinnost podávat podání pro úřady prostřednictvím datové schránky.</p>
+      <p class="full-content" id="full103" style="display:none;">Datovou schránku nově dostanou další právnické osoby i živnostníci
 
 Radim Darebník
 
@@ -7129,14 +7174,9 @@ dodává na závěr Jan Kubica z Moore Legal CZ.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2021/datovou-schranku-nove-dostanou-dalsi-pravnicke-oso" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary103', this)">
+        onclick="toggleFullContent(103, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 103)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7145,6 +7185,11 @@ dodává na závěr Jan Kubica z Moore Legal CZ.</p>
       <p class="date">03.06.2021</p>
       <hr/>
       <p class="summary" id="summary104">Moore Czech Republic posiluje na poli kybernetické bezpečnosti díky akvizici Menzo Security
+
+3 června 2021
+
+Divize Menzo Security vznikla v prosinci roku 2016 a po jejím začlenění do společnosti DoxoLogic v ní skupina Moore Czech Republic drží 60% podíl. Jejím hlavním cílem je doporučovat svým zákazníků opatření a řešení pro ochranu jejich dat a informačních systémů a zajistit jim proaktivní a finančně nenáročný monitoring kybernetických útoků.</p>
+      <p class="full-content" id="full104" style="display:none;">Moore Czech Republic posiluje na poli kybernetické bezpečnosti díky akvizici Menzo Security
 
 3 června 2021
 
@@ -7173,14 +7218,9 @@ uzavírá Miloslav Rut.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cerven-2021/moore-czech-republic-posiluje-na-poli-kyberneticke" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary104', this)">
+        onclick="toggleFullContent(104, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 104)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7189,6 +7229,13 @@ uzavírá Miloslav Rut.</p>
       <p class="date">11.05.2021</p>
       <hr/>
       <p class="summary" id="summary105">SKUPINA MOORE CZECH REPUBLIC POSILUJE V OBLASTI AUDITU, KOUPILA SPOLEČNOST ADUKO
+
+Radim Darebník
+
+11 května 2021
+
+Akvizicí další české firmy posiluje skupina Moore Czech Republic poskytování služeb v oblasti statutárních auditů i dalších auditních služeb. „Pro akvizici jsme se rozhodli především kvůli zkušenostem a velké flexibilitě celého týmu ADUKO.</p>
+      <p class="full-content" id="full105" style="display:none;">SKUPINA MOORE CZECH REPUBLIC POSILUJE V OBLASTI AUDITU, KOUPILA SPOLEČNOST ADUKO
 
 Radim Darebník
 
@@ -7213,14 +7260,9 @@ Společnost Moore Audit CZ má v současné době zhruba 30 auditních odborní
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2021/skupina-moore-czech-republic-posiluje-v-oblasti-au" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary105', this)">
+        onclick="toggleFullContent(105, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 105)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7229,6 +7271,13 @@ Společnost Moore Audit CZ má v současné době zhruba 30 auditních odborní
       <p class="date">05.05.2021</p>
       <hr/>
       <p class="summary" id="summary106">Novým předsedou představenstva a generálním ředitelem společnosti Servodata se stane Miroslav Řezníček
+
+Radim Darebník
+
+5 května 2021
+
+Ve své nové roli se zaměří na implementaci rozvojové strategie, orientované především na přípravu velkých IT řešení, na oblast kybernetické bezpečnosti, ale také na specifické projekty pro průmysl a dopravu. Součástí jeho nové mise bude také zahraniční expanze společnosti Servodata v regionu střední a východní Evropy.</p>
+      <p class="full-content" id="full106" style="display:none;">Novým předsedou představenstva a generálním ředitelem společnosti Servodata se stane Miroslav Řezníček
 
 Radim Darebník
 
@@ -7261,14 +7310,9 @@ Miroslav Řezníček vystudoval České vysoké učení technické a University 
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2021/novym-predsedou-predstavenstva-a-generalnim-redite" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary106', this)">
+        onclick="toggleFullContent(106, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 106)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7277,6 +7321,13 @@ Miroslav Řezníček vystudoval České vysoké učení technické a University 
       <p class="date">30.04.2021</p>
       <hr/>
       <p class="summary" id="summary107">V ČERVNU VSTOUPÍ V PLATNOST NOVÝ ZÁKON O EVIDENCI SKUTEČNÝCH MAJITELŮ FIREM, PODNIKATELŮM MOHOU HROZIT SANKCE
+
+Ondřej Hubatka
+
+30 dubna 2021
+
+Podle společnosti Moore Legal CZ by ale podnikatelé měli zbystřit, protože na rozdíl od předchozího stavu zákon nově při nezajištění zápisu údajů do evidence zavádí několik druhů sankcí. Povinnost zaznamenat údaje o svém skutečném majiteli dopadá na právnické osoby a svěřenské fondy.</p>
+      <p class="full-content" id="full107" style="display:none;">V ČERVNU VSTOUPÍ V PLATNOST NOVÝ ZÁKON O EVIDENCI SKUTEČNÝCH MAJITELŮ FIREM, PODNIKATELŮM MOHOU HROZIT SANKCE
 
 Ondřej Hubatka
 
@@ -7313,14 +7364,9 @@ podotýká Jan Kubica. Nově také dojde ke zpřístupnění části informací 
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2021/v-cervnu-vstoupi-v-platnost-novy-zakon-o-evidenci" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary107', this)">
+        onclick="toggleFullContent(107, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 107)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7329,6 +7375,13 @@ podotýká Jan Kubica. Nově také dojde ke zpřístupnění části informací 
       <p class="date">29.04.2021</p>
       <hr/>
       <p class="summary" id="summary108">Česká umělá inteligence odhalí dvaapůlkrát více černých odběrů elektřiny než běžné metody. Předpoví i havárie vodovodů a plynovodů
+
+Ondřej Hubatka
+
+29 dubna 2021
+
+Inovativní aplikaci, která propojuje výkonnou analytiku založenou na umělé inteligenci a zobrazování výsledků v interaktivní 3D scéně využívá</p>
+      <p class="full-content" id="full108" style="display:none;">Česká umělá inteligence odhalí dvaapůlkrát více černých odběrů elektřiny než běžné metody. Předpoví i havárie vodovodů a plynovodů
 
 Ondřej Hubatka
 
@@ -7361,14 +7414,9 @@ Mycroft Mind je česká inovativní firma, která se specializuje na sběr, zpra
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2021/ceska-umela-inteligence-odhali-dvaapulkrat-vice-ce" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary108', this)">
+        onclick="toggleFullContent(108, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 108)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7377,6 +7425,13 @@ Mycroft Mind je česká inovativní firma, která se specializuje na sběr, zpra
       <p class="date">12.03.2021</p>
       <hr/>
       <p class="summary" id="summary109">Většina Čechů by čtyřdenní pracovní týden uvítala. Výhody v něm vidí i firmy, nad jeho zavedením ale zatím neuvažují
+
+Roman Macháček
+
+12 března 2021
+
+Téměř čtyři z deseti lidí ale zároveň v současnosti pracuje více než 40 hodin týdně.</p>
+      <p class="full-content" id="full109" style="display:none;">Většina Čechů by čtyřdenní pracovní týden uvítala. Výhody v něm vidí i firmy, nad jeho zavedením ale zatím neuvažují
 
 Roman Macháček
 
@@ -7415,14 +7470,9 @@ dodává Petr Kymlička.
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2021/vetsina-cechu-by-ctyrdenni-pracovni-tyden-uvitala" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary109', this)">
+        onclick="toggleFullContent(109, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 109)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7431,6 +7481,13 @@ dodává Petr Kymlička.
       <p class="date">11.03.2021</p>
       <hr/>
       <p class="summary" id="summary110">Technologická společnost Servodata ze skupiny Moore Czech Republic se připravuje na vstup investora, rumunský IT lídr Bittnet má získat 35% podíl
+
+Roman Macháček
+
+11 března 2021
+
+Cílem obou společností je posílení tržní pozice v regionu střední a východní Evropy, ale také meziroční růst obratu alespoň o 20 %. Servodata i Bittnet se zaměřují zejména na vývoj a implementaci technologické infrastruktury, IT poradenství či kyberbezpečnost.</p>
+      <p class="full-content" id="full110" style="display:none;">Technologická společnost Servodata ze skupiny Moore Czech Republic se připravuje na vstup investora, rumunský IT lídr Bittnet má získat 35% podíl
 
 Roman Macháček
 
@@ -7455,14 +7512,9 @@ Mezi klíčové oblasti zaměření skupiny Servodata patří návrh, implementa
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2021/technologicka-spolecnost-servodata-ze-skupiny-moor" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary110', this)">
+        onclick="toggleFullContent(110, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 110)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7470,7 +7522,8 @@ Mezi klíčové oblasti zaměření skupiny Servodata patří návrh, implementa
       <h2>V SEKTORECH NEJVÍCE ZASAŽENÝCH PANDEMIÍ VZROSTE TRANSAKČNÍ AKTIVITA O DESÍTKY PROCENT, PRODEJE FIREM URYCHLÍ I GENERAČNÍ OBMĚNA</h2>
       <p class="date">07.03.2021</p>
       <hr/>
-      <p class="summary" id="summary111">V SEKTORECH NEJVÍCE ZASAŽENÝCH PANDEMIÍ VZROSTE TRANSAKČNÍ AKTIVITA O DESÍTKY PROCENT, PRODEJE FIREM URYCHLÍ I GENERAČNÍ OBMĚNA
+      <p class="summary" id="summary111">V SEKTORECH NEJVÍCE ZASAŽENÝCH PANDEMIÍ VZROSTE TRANSAKČNÍ AKTIVITA O DESÍTKY PROCENT, PRODEJE FIREM URYCHLÍ</p>
+      <p class="full-content" id="full111" style="display:none;">V SEKTORECH NEJVÍCE ZASAŽENÝCH PANDEMIÍ VZROSTE TRANSAKČNÍ AKTIVITA O DESÍTKY PROCENT, PRODEJE FIREM URYCHLÍ I GENERAČNÍ OBMĚNA
 
 Roman Macháček
 
@@ -7513,14 +7566,9 @@ doplňuje k tomu Petr Kymlička.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2021/v-sektorech-nejvice-zasazenych-pandemii-vzroste-tr" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary111', this)">
+        onclick="toggleFullContent(111, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 111)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7529,6 +7577,13 @@ doplňuje k tomu Petr Kymlička.</p>
       <p class="date">19.02.2021</p>
       <hr/>
       <p class="summary" id="summary112">Asijské ekonomiky v ekonomickém růstu předbíhají Evropu, pomohlo jim rychlé zotavení z pandemie
+
+Roman Macháček
+
+19 února 2021
+
+Hlavním důvodem je tamní výrazné, a především rychlejší zlepšení epidemické situace, které umožnilo dřívější návrat k ekonomickému růstu. Například růst čínské ekonomiky se v posledním kvartálu roku 2020 vrátil na úroveň před vypuknutím pandemie.</p>
+      <p class="full-content" id="full112" style="display:none;">Asijské ekonomiky v ekonomickém růstu předbíhají Evropu, pomohlo jim rychlé zotavení z pandemie
 
 Roman Macháček
 
@@ -7565,14 +7620,9 @@ Výsledky ze závěru loňského roku naznačují růst čínské ekonomiky i do
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2021/asijske-ekonomiky-v-ekonomickem-rustu-predbihaji-e" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary112', this)">
+        onclick="toggleFullContent(112, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 112)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7581,6 +7631,13 @@ Výsledky ze závěru loňského roku naznačují růst čínské ekonomiky i do
       <p class="date">09.02.2021</p>
       <hr/>
       <p class="summary" id="summary113">Kompenzace pro školicí firmy v programech COVID neodpovídají skutečným ztrátám, hrozící zánik stovek z nich zpomalí restart ekonomiky
+
+Roman Macháček
+
+9 února 2021
+
+Hlavním důvodem jsou nároky na finanční podporu jen během měsíců, kdy byla činnost těchto zařízení povinně pozastavena. Kompenzace by podle poradenské společnosti Moore Czech Republic měly zohledňovat reálné náklady bez ohledu na počet zaměstnanců a období uzavřených provozoven.</p>
+      <p class="full-content" id="full113" style="display:none;">Kompenzace pro školicí firmy v programech COVID neodpovídají skutečným ztrátám, hrozící zánik stovek z nich zpomalí restart ekonomiky
 
 Roman Macháček
 
@@ -7619,14 +7676,9 @@ doplňuje Radovan Hauk.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2021/kompenzace-pro-skolici-firmy-v-programech-covid-ne" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary113', this)">
+        onclick="toggleFullContent(113, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 113)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7635,6 +7687,11 @@ doplňuje Radovan Hauk.</p>
       <p class="date">28.01.2021</p>
       <hr/>
       <p class="summary" id="summary114">Poradenská skupina Moore Czech Republic vytvořila ucelenou holdingovou strukturu, komplexními službami chce konkurovat „velké čtyřce“
+
+28 ledna 2021
+
+Díky komplexnímu portfoliu služeb chce získat a udržet páté místo z hlediska celkového postavení na českém trhu. Vybranými specializovanými činnostmi zároveň plánuje plně konkurovat tzv.</p>
+      <p class="full-content" id="full114" style="display:none;">Poradenská skupina Moore Czech Republic vytvořila ucelenou holdingovou strukturu, komplexními službami chce konkurovat „velké čtyřce“
 
 28 ledna 2021
 
@@ -7677,14 +7734,9 @@ Ve skupině Moore Czech Republic díky transformaci a rozšíření aktivit při
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/brezen-2021/poradenska-skupina-moore-czech-republic-vytvorila" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary114', this)">
+        onclick="toggleFullContent(114, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 114)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7693,6 +7745,13 @@ Ve skupině Moore Czech Republic díky transformaci a rozšíření aktivit při
       <p class="date">26.01.2021</p>
       <hr/>
       <p class="summary" id="summary115">DATOVOU SCHRÁNKU BY KVŮLI PROJEDNÁVANÉ NOVELE ZÁKONA MOHLI POVINNĚ DOSTAT VEDLE FIREM TAKÉ DALŠÍ PRÁVNICKÉ OSOBY A ŽIVNOSTNÍCI
+
+Roman Macháček
+
+26 ledna 2021
+
+V případě jejího přijetí by podle společnosti Moore Legal CZ došlo k výraznému rozšíření okruhu právnických a fyzických osob, kterým by datová schránka byla zřízena automaticky – ze zákona.</p>
+      <p class="full-content" id="full115" style="display:none;">DATOVOU SCHRÁNKU BY KVŮLI PROJEDNÁVANÉ NOVELE ZÁKONA MOHLI POVINNĚ DOSTAT VEDLE FIREM TAKÉ DALŠÍ PRÁVNICKÉ OSOBY A ŽIVNOSTNÍCI
 
 Roman Macháček
 
@@ -7727,14 +7786,9 @@ Novela by také ve vhodné podobě napomohla většímu zabezpečení elektronic
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2021/datovou-schranku-by-kvuli-projednavane-novele-zako" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary115', this)">
+        onclick="toggleFullContent(115, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 115)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7743,6 +7797,13 @@ Novela by také ve vhodné podobě napomohla většímu zabezpečení elektronic
       <p class="date">21.01.2021</p>
       <hr/>
       <p class="summary" id="summary116">VÝROBA AUT BUDE V ROCE 2021 V NEJLEPŠÍM PŘÍPADĚ STAGNOVAT
+
+Roman Macháček
+
+21 ledna 2021
+
+Rok 2020 byl pro automobilový průmysl značně komplikovaný. Výroba automobilů byla silně ovlivněna celosvětovou pandemií.</p>
+      <p class="full-content" id="full116" style="display:none;">VÝROBA AUT BUDE V ROCE 2021 V NEJLEPŠÍM PŘÍPADĚ STAGNOVAT
 
 Roman Macháček
 
@@ -7771,14 +7832,9 @@ Krize způsobená světovou pandemií přichází pro automobilový průmysl pr�
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/leden-2021/vyroba-aut-bude-v-roce-2021-v-nejlepsim-pripade-st" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary116', this)">
+        onclick="toggleFullContent(116, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 116)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7787,6 +7843,13 @@ Krize způsobená světovou pandemií přichází pro automobilový průmysl pr�
       <p class="date">10.12.2020</p>
       <hr/>
       <p class="summary" id="summary117">Bezbariérovost splňuje asi jen desetina pražských sportovišť, pomoci zlepšit situaci má nový plán rozvoje sportu
+
+Roman Macháček
+
+10 prosince 2020
+
+Podle dotazníkového šetření Magistrátu hlavního města Prahy, jehož respondenty byli provozovatelé sportovních zařízení, by téměř třetina (30,5 %) z pražských sportovišť měla být bezbariérová. Analýza pasportu těchto zařízení však ukázala, že jejich podíl ve skutečnosti činí jen necelou desetinu (9,6 %).</p>
+      <p class="full-content" id="full117" style="display:none;">Bezbariérovost splňuje asi jen desetina pražských sportovišť, pomoci zlepšit situaci má nový plán rozvoje sportu
 
 Roman Macháček
 
@@ -7819,14 +7882,9 @@ doplňuje Alena Jančíková, ředitelka České asociace paraplegiků, která b
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/prosinec-2020/bezbarierovost-splnuje-asi-jen-desetina-prazskych" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary117', this)">
+        onclick="toggleFullContent(117, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 117)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7835,6 +7893,13 @@ doplňuje Alena Jančíková, ředitelka České asociace paraplegiků, která b
       <p class="date">03.11.2020</p>
       <hr/>
       <p class="summary" id="summary118">Skupina Moore Czech Republic posiluje auditní služby, zaměřuje se i na speciální IT audit
+
+Roman Macháček
+
+3 listopadu 2020
+
+Mezi služby této společnosti patří i komplexní due diligence a nově také IT audit. V jeho rámci bude vyhodnocovat stav ICT technologií firem po technické i bezpečnostní stránce a případně navrhovat jeho optimalizaci.</p>
+      <p class="full-content" id="full118" style="display:none;">Skupina Moore Czech Republic posiluje auditní služby, zaměřuje se i na speciální IT audit
 
 Roman Macháček
 
@@ -7871,14 +7936,9 @@ konstatuje Petr Kymlička, partner společnosti Moore Czech Republic.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/listopad-2020/skupina-moore-czech-republic-posiluje-auditni-sluz" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary118', this)">
+        onclick="toggleFullContent(118, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 118)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7887,6 +7947,13 @@ konstatuje Petr Kymlička, partner společnosti Moore Czech Republic.</p>
       <p class="date">21.10.2020</p>
       <hr/>
       <p class="summary" id="summary119">Nová petice chce zařadit esport na úroveň klasických sportů, inspiraci našla v Německu
+
+Roman Macháček
+
+21 října 2020
+
+Vytvořil ji svaz hráčů, týmů a organizátorů elektronických sportů Czech Electronic Sport Association (CESA). Podle něj by se měl esport díky své celosvětově stoupající oblibě zařadit mezi oficiální volnočasové aktivity prospěšné jak z duševního, tak i fyzického hlediska.</p>
+      <p class="full-content" id="full119" style="display:none;">Nová petice chce zařadit esport na úroveň klasických sportů, inspiraci našla v Německu
 
 Roman Macháček
 
@@ -7919,14 +7986,9 @@ online
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2020/nova-petice-chce-zaradit-esport-na-uroven-klasicky" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary119', this)">
+        onclick="toggleFullContent(119, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 119)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7935,6 +7997,15 @@ online
       <p class="date">19.10.2020</p>
       <hr/>
       <p class="summary" id="summary120">Skupina Moore Czech Republic se rozrůstá o unikátní koncept divize Moore Technology CZ
+
+Roman Macháček
+
+19 října 2020
+
+Společnost bude sloužit jako platforma pro zastřešení veškerých technologických aktivit skupiny, které zahrnují jak poskytování konvenčních IT služeb, tak i vývoj velmi progresivních produktů, zejména v oblasti umělé inteligence. Společnost Servodata jako základna technologických aktivit
+
+Skupina Moore Czech Republic intenzivně rozšiřuje svou působnost v technologických oborech.</p>
+      <p class="full-content" id="full120" style="display:none;">Skupina Moore Czech Republic se rozrůstá o unikátní koncept divize Moore Technology CZ
 
 Roman Macháček
 
@@ -7961,14 +8032,9 @@ Společnost Mycroft Mind se orientuje primárně na dva tržní segmenty, který
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/rijen-2020/skupina-moore-czech-republic-se-rozrusta-o-unikatn" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary120', this)">
+        onclick="toggleFullContent(120, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 120)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -7976,7 +8042,12 @@ Společnost Mycroft Mind se orientuje primárně na dva tržní segmenty, který
       <h2>Na trh účetního a daňového poradenství vstupuje nový silný hráč: Moore Accounting CZ se vidí v TOP 5</h2>
       <p class="date">21.09.2020</p>
       <hr/>
-      <p class="summary" id="summary121">Na trh účetního a daňového poradenství vstupuje nový silný hráč: Moore Accounting CZ se vidí v TOP 5
+      <p class="summary" id="summary121">Na trh účetního a daňového poradenství vstupuje nový silný hráč: Moore Accounting CZ se vidí v TOP 5 Ondřej Hubatka
+
+21 září 2020
+
+Nově vzniklá společnost Moore Accounting CZ se v rámci holdingové struktury Moore Czech Republic zaměří na účetní a daňové poradenství.</p>
+      <p class="full-content" id="full121" style="display:none;">Na trh účetního a daňového poradenství vstupuje nový silný hráč: Moore Accounting CZ se vidí v TOP 5
 
 Ondřej Hubatka
 
@@ -7999,14 +8070,9 @@ doplňuje Petr Kymlička.</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/zari-2020/na-trh-ucetniho-a-danoveho-poradenstvi-vstupuje-no" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary121', this)">
+        onclick="toggleFullContent(121, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 121)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -8015,6 +8081,13 @@ doplňuje Petr Kymlička.</p>
       <p class="date">02.09.2020</p>
       <hr/>
       <p class="summary" id="summary122">Moore Czech Republic rozšiřuje své služby. Vzniká Moore Legal CZ
+
+Ondřej Hubatka
+
+2 září 2020
+
+Oporou Mooru Legal CZ je skupina zkušených profesionálů s dlouholetou praxí v oboru, kterou tvoří tři partneři, 15 právníků a desítky dalších spolupracovníků.</p>
+      <p class="full-content" id="full122" style="display:none;">Moore Czech Republic rozšiřuje své služby. Vzniká Moore Legal CZ
 
 Ondřej Hubatka
 
@@ -8053,14 +8126,9 @@ Ondrej.hubatka@dark-side.cz
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/zari-2020/moore-czech-republic-rozsiruje-sve-sluzby-vznika-m" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary122', this)">
+        onclick="toggleFullContent(122, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 122)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -8069,6 +8137,13 @@ Ondrej.hubatka@dark-side.cz
       <p class="date">10.08.2020</p>
       <hr/>
       <p class="summary" id="summary123">Komunita českého esportu bude mít za pět let půl milionu osob, v Německu už jde o plnohodnotný sport
+
+Roman Macháček
+
+10 srpna 2020
+
+Elektronický sport neboli esport se celosvětově stává významnou součástí sportovního světa, která láká nejen hráče s profesionálními ambicemi, ale také diváky a sponzory.</p>
+      <p class="full-content" id="full123" style="display:none;">Komunita českého esportu bude mít za pět let půl milionu osob, v Německu už jde o plnohodnotný sport
 
 Roman Macháček
 
@@ -8101,14 +8176,9 @@ Cílem svazu CESA je vytvoření stabilního a etického prostředí esportu v �
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/august-2020/the-czech-esport-community-will-grow-to-500,000-pe" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary123', this)">
+        onclick="toggleFullContent(123, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 123)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -8117,6 +8187,13 @@ Cílem svazu CESA je vytvoření stabilního a etického prostředí esportu v �
       <p class="date">27.07.2020</p>
       <hr/>
       <p class="summary" id="summary124">Pandemie posílila nutnost připravit úředníky na práci z domova. Vybavení, zabezpečení a proškolení přijde na desítky miliard
+
+Ondřej Hubatka
+
+27 července 2020
+
+Situace při pandemii, kdy mnoho aktivit firem přecházelo do online prostředí, napomohla k urychlenízměn v jejich operačních modelech.</p>
+      <p class="full-content" id="full124" style="display:none;">Pandemie posílila nutnost připravit úředníky na práci z domova. Vybavení, zabezpečení a proškolení přijde na desítky miliard
 
 Ondřej Hubatka
 
@@ -8151,14 +8228,9 @@ doplňuje Zdeněk Zajíček, předseda ICT unie. Ta se dlouhodobě angažuje v d
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/cervenec-2020/pandemie-posilila-nutnost-pripravit-uredniky-na-pr" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary124', this)">
+        onclick="toggleFullContent(124, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 124)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -8167,6 +8239,13 @@ doplňuje Zdeněk Zajíček, předseda ICT unie. Ta se dlouhodobě angažuje v d
       <p class="date">17.05.2020</p>
       <hr/>
       <p class="summary" id="summary125">Hromadný home office přinesl firmám až třetinové snížení produktivity, problémem je i kyberbezpečnost
+
+Roman Macháček
+
+17 května 2020
+
+Vyplývá to z interní analýzy poradenské společnosti Moore Czech Republic mezi jejími klienty. Ti také pro vzájemnou komunikaci často používají nezabezpečené aplikace jako například Zoom.</p>
+      <p class="full-content" id="full125" style="display:none;">Hromadný home office přinesl firmám až třetinové snížení produktivity, problémem je i kyberbezpečnost
 
 Roman Macháček
 
@@ -8197,14 +8276,9 @@ Práci z domova nemůže vykonávat například také velká část zaměstnanc�
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/kveten-2020/hromadny-home-office-prinesl-firmam-az-tretinove-s" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary125', this)">
+        onclick="toggleFullContent(125, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 125)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -8213,6 +8287,13 @@ Práci z domova nemůže vykonávat například také velká část zaměstnanc�
       <p class="date">15.04.2020</p>
       <hr/>
       <p class="summary" id="summary126">KYBERBEZPEČNOST
+
+Ondřej Hubatka
+
+15 dubna 2020
+
+Falešné IT specialisty vyslané do firmy pod smyšlenou záminkou dokonce ke svým souborům pustil každý. Zhruba 70 % testovaných subjektů se zase nechalo zmást phishingem, tedy podvodnými zprávami požadujícími vyplnění citlivých údajů.</p>
+      <p class="full-content" id="full126" style="display:none;">KYBERBEZPEČNOST
 
 Ondřej Hubatka
 
@@ -8257,14 +8338,9 @@ tiskovázpráva</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2020/tiskova-zprava-15-4-2020-kyberbezpecnos" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary126', this)">
+        onclick="toggleFullContent(126, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 126)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -8273,6 +8349,13 @@ tiskovázpráva</p>
       <p class="date">02.04.2020</p>
       <hr/>
       <p class="summary" id="summary127">FIREMNÍ DLUHOPISY
+
+Ondřej Hubatka
+
+2 dubna 2020
+
+Firmy nejčastěji emitují dluhopisy v nižším objemu za účelem financování určitého záměru. Tímto principem se blížíme západním státům, kterým se skladbou i charakterem využívání dluhopisů vyrovnáme zhruba do sedmi</p>
+      <p class="full-content" id="full127" style="display:none;">FIREMNÍ DLUHOPISY
 
 Ondřej Hubatka
 
@@ -8317,14 +8400,9 @@ tiskovázpráva</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/duben-2020/firemni-dluhopisy" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary127', this)">
+        onclick="toggleFullContent(127, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 127)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
 
@@ -8333,6 +8411,13 @@ tiskovázpráva</p>
       <p class="date">06.01.2020</p>
       <hr/>
       <p class="summary" id="summary128">MOORE VSTUPUJE DO ČR
+
+Ondřej Hubatka
+
+6 ledna 2020
+
+Společnost Moore Czech Republic je vedena jednateli a společníky Petrem Kymličkou a Radovanem Haukem, sídlí v Praze a má v rámci celé skupiny více než 130 zaměstnanců. Pod značku Moore s sebou přivádí své specializované dceřiné společnosti Servodata, DataScript a S-COMP, jež se orientují na poskytování komplexních služeb v oblasti IT a vzdělávání.</p>
+      <p class="full-content" id="full128" style="display:none;">MOORE VSTUPUJE DO ČR
 
 Ondřej Hubatka
 
@@ -8371,14 +8456,9 @@ tiskovázpráva</p>
         Source: <a href="https://www.moore-czech.cz/tiskove-zpravy/january-2020/moore-vstupuje-do-cr" target="_blank">Moore Czech Republic s.r.o.</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary128', this)">
+        onclick="toggleFullContent(128, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, 128)">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     
   </div>
