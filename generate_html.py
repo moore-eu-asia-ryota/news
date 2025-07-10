@@ -1,6 +1,5 @@
 import csv
 from datetime import datetime
-from deep_translator import GoogleTranslator
 
 header = """<!DOCTYPE html>
 <html>
@@ -100,11 +99,6 @@ header = """<!DOCTYPE html>
       color: #333;
       margin-bottom: 20px;
     }
-    .card .summary.translated {
-      display: none;
-      color: #1ea7fd;
-      margin-bottom: 20px;
-    }
     .card .source {
       font-size: 0.9em;
       font-weight: bold;
@@ -127,8 +121,12 @@ header = """<!DOCTYPE html>
       right: 160px;
       background: #034d66;
     }
+    .translate-container {
+      margin-top: 20px;
+      min-height: 40px;
+    }
   </style>
-  <script>
+  <script type="text/javascript">
     var sortAsc = false; // false = descending (newest first)
 
     function parseDate(str) {
@@ -164,14 +162,21 @@ header = """<!DOCTYPE html>
       }
     }
 
-    function toggleTranslated(id, btn) {
-      var s = document.getElementById(id);
-      if (s.style.display === 'block') {
-        s.style.display = 'none';
-        btn.innerText = 'Show English';
+    function showTranslateWidget(btn, idx) {
+      var container = btn.parentElement.querySelector('.translate-container');
+      if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'block';
+        container.innerHTML = '<div id="google_translate_element' + idx + '"></div>';
+        new google.translate.TranslateElement({
+          pageLanguage: 'auto',
+          includedLanguages: 'en,ko,ja,zh,fr,de,es,ru',
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+        }, 'google_translate_element' + idx);
+        btn.innerText = 'Hide Translate';
       } else {
-        s.style.display = 'block';
-        btn.innerText = 'Hide English';
+        container.style.display = 'none';
+        container.innerHTML = '';
+        btn.innerText = 'Translate';
       }
     }
 
@@ -183,11 +188,10 @@ header = """<!DOCTYPE html>
       document.querySelectorAll('.card').forEach(function(card){
         var t   = card.querySelector('h2').innerText.toLowerCase();
         var sum = card.querySelector('.summary').innerText.toLowerCase();
-        var sum_en = card.querySelector('.summary.translated').innerText.toLowerCase();
         var dt  = card.querySelector('.date').innerText.trim().split('.');
         var y   = dt[2], m = dt[1];
         var so  = card.querySelector('.source a').innerText;
-        var ok = (t + ' ' + sum + ' ' + sum_en).includes(text)
+        var ok = (t + ' ' + sum).includes(text)
               && (!year   || y   === year)
               && (!month  || m   === month)
               && (!src    || so  === src);
@@ -228,6 +232,10 @@ header = """<!DOCTYPE html>
       });
     };
   </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {}
+  </script>
 </head>
 <body>
   <button id="backToTop" title="Back to top">↑</button>
@@ -263,16 +271,14 @@ def format_date(date_str):
     except Exception:
         return date_str
 
-def make_card(title, title_en, content, content_en, post_date, url, source, idx):
+def make_card(title, content, post_date, url, source, idx):
     post_date_fmt = format_date(post_date)
     return f'''
     <div class="card">
       <h2>{title}</h2>
-      <h2 style="color:#1ea7fd;font-size:1em;">{title_en}</h2>
       <p class="date">{post_date_fmt}</p>
       <hr/>
       <p class="summary" id="summary{idx}">{content}</p>
-      <p class="summary translated" id="summary_en{idx}">{content_en}</p>
       <p class="source">
         Source: <a href="{url}" target="_blank">{source}</a>
       </p>
@@ -281,32 +287,21 @@ def make_card(title, title_en, content, content_en, post_date, url, source, idx)
         Read full article
       </button>
       <button class="btn trans"
-        onclick="toggleTranslated('summary_en{idx}', this)">
-        Show English
+        onclick="showTranslateWidget(this, {idx})">
+        Translate
       </button>
+      <div class="translate-container" style="display:none;"></div>
     </div>
     '''
-
-def translate_text(text):
-    if not text.strip():
-        return ""
-    try:
-        return GoogleTranslator(source='auto', target='en').translate(text)
-    except Exception:
-        return text
 
 def main():
     with open('output/articles.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         cards = []
         for idx, row in enumerate(reader):
-            title_en = translate_text(row['title'])
-            content_en = translate_text(row['content'])
             cards.append(make_card(
                 row['title'],
-                title_en,
                 row['content'],
-                content_en,
                 row['post_date'],
                 row['url'],
                 row['source'],
