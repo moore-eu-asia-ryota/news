@@ -31,10 +31,10 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add articles.html
+          git add index.html
           git stash
           git pull --rebase origin main
           git stash pop || true
-          git add articles.html
+          git add index.html
           git commit -m "Auto-generate articles.html from articles.csv" || echo "No changes to commit"
           git push origin main
