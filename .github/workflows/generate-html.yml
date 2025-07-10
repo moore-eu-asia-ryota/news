@@ -20,10 +20,9 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install spaCy and model
+      - name: Install Transformers and Torch
         run: |
-          pip install spacy
-          python -m spacy download en_core_web_sm
+          pip install transformers torch
 
       - name: Generate HTML from CSV
         run: python generate_html.py
