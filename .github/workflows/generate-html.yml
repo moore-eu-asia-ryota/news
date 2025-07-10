@@ -21,7 +21,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: pip install --upgrade pip
+        run: pip install deep-translator
 
       - name: Generate HTML from CSV
         run: python generate_html.py
