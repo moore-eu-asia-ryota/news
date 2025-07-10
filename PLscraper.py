@@ -1,21 +1,13 @@
-import os
-import time
 import requests
-from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 import pandas as pd
+import os
+import time
+import re
 
-# ─── CONFIG ─────────────────────────────────────────────────────────────
-
-# template for each page of the "Artykuły" listing
-LISTING_URL_TPL = (
-    'https://moorepolska.pl/artykuly/'
-    '?jsf=jet-engine&tax=category:31&pagenum={page}'
-)
-
+BASE_URL = 'https://moorepolska.pl/artykuly/?jsf=jet-engine&tax=category:31&pagenum='
 OUTPUT_DIR = 'output'
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
-SOURCE_NAME = 'Moore Polska'
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'PLarticles.csv')
 
 HEADERS = {
     'User-Agent': (
@@ -23,101 +15,77 @@ HEADERS = {
         'AppleWebKit/537.36 (KHTML, like Gecko) '
         'Chrome/115.0.0.0 Safari/537.36'
     ),
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'pl-PL,pl;q=0.9,en-US,en;q=0.8',
+    'Connection': 'keep-alive',
 }
+
+POLISH_MONTHS = {
+    'stycznia': '01', 'lutego': '02', 'marca': '03', 'kwietnia': '04',
+    'maja': '05', 'czerwca': '06', 'lipca': '07', 'sierpnia': '08',
+    'września': '09', 'października': '10', 'listopada': '11', 'grudnia': '12'
+}
+
+SOURCE_NAME = 'Moore Polska'
 
 session = requests.Session()
 session.headers.update(HEADERS)
 
-# ─── PAGINATED LISTING SCRAPE ───────────────────────────────────────────
-
-def scrape_listing():
-    """
-    Loop through pages 1, 2, ... until a page has no articles.
-    Returns a de-duplicated list of article URLs.
-    """
-    page = 1
-    urls = []
-    while True:
-        url = LISTING_URL_TPL.format(page=page)
-        resp = session.get(url)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, 'html.parser')
-
-        items = soup.select('div.jet-listing-grid__item')
-        if not items:
-            break
-
-        for item in items:
-            a = item.find('a', href=True)
-            if a:
-                full = urljoin(url, a['href'])
-                urls.append(full)
-
-        page += 1
-        time.sleep(0.5)  # be polite
-
-    # preserve ordering, drop dupes
-    return list(dict.fromkeys(urls))
-
-
-# ─── SINGLE-ARTICLE SCRAPE ──────────────────────────────────────────────
-
-def scrape_article(url):
-    """
-    Fetch title, publication date and the full text of one article.
-    - Title: prefers <h1> text; if that <h1> wraps an <a>, grabs the <a> text.
-    - Date: the visible text in <time>
-    - Content: concatenates all headings + paragraphs in the body.
-    """
+def scrape_listing(page):
+    url = f"{BASE_URL}{page}"
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
+    articles = []
+    for div in soup.select('div.jet-listing-grid__item'):
+        a = div.find('a', href=True)
+        if a:
+            articles.append(a['href'])
+    return articles
 
-    # ── TITLE ──
-    title = ''
-    h1 = soup.select_one('.elementor-widget-theme-post-title .elementor-heading-title')
-    if h1:
-        a = h1.find('a')
-        title = a.get_text(strip=True) if a else h1.get_text(strip=True)
-    else:
-        # fallback to first <h1> or even <title> tag
-        raw_h1 = soup.find('h1')
-        if raw_h1:
-            a = raw_h1.find('a')
-            title = a.get_text(strip=True) if a else raw_h1.get_text(strip=True)
-        else:
-            # ultimate fallback
-            title_tag = soup.find('title')
-            title = title_tag.get_text(strip=True) if title_tag else ''
+def parse_polish_date(text):
+    # Example: "16 stycznia 2025"
+    match = re.search(r'(\d{1,2})\s+([a-ząćęłńóśźż]+)\s+(\d{4})', text, re.IGNORECASE)
+    if match:
+        day, month_pl, year = match.groups()
+        month = POLISH_MONTHS.get(month_pl.lower(), '01')
+        return f"{year}-{month}-{day.zfill(2)}"
+    return ''
 
-    # ── DATE ──
-    date_el = soup.select_one('.elementor-widget-post-info time')
-    post_date = date_el.get_text(strip=True) if date_el else ''
-
-    # ── CONTENT ──
-    parts = []
-    # grab text-editor (paragraphs) and heading widgets in document order
-    for sel in (
-        '.elementor-widget-text-editor .elementor-widget-container',
-        '.elementor-widget-heading .elementor-heading-title'
-    ):
-        for node in soup.select(sel):
-            text = node.get_text(strip=True)
-            if not text:
-                continue
-            # skip boilerplate
-            low = text.lower()
-            if low.startswith('zapraszamy') or low.startswith('może cię'):
-                continue
-            parts.append(text)
-
-    content = '\n\n'.join(parts)
+def scrape_article(url):
+    resp = session.get(url)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, 'html.parser')
+    # Title
+    title_tag = soup.find('h1')
+    title = title_tag.get_text(strip=True) if title_tag else ''
+    # Date: look for a date string near the top
+    post_date = ''
+    for tag in soup.find_all(['time', 'span', 'div']):
+        if tag.string and re.search(r'\d{1,2}\s+[a-ząćęłńóśźż]+\s+\d{4}', tag.string, re.IGNORECASE):
+            post_date = parse_polish_date(tag.string)
+            break
+    if not post_date:
+        # Fallback: search in the whole text
+        text = soup.get_text()
+        post_date = parse_polish_date(text)
+    # Content: main article content
+    content = ''
+    main = soup.find('main') or soup
+    # Try to find the main content by heading
+    content_blocks = []
+    found_title = False
+    for tag in main.find_all(['h1', 'h2', 'h3', 'p', 'ul', 'ol']):
+        if tag.name == 'h1' and title in tag.get_text():
+            found_title = True
+            continue
+        if found_title:
+            # Stop at "Może Cię zainteresować" or similar
+            if tag.get_text(strip=True).startswith('Może Cię zainteresować'):
+                break
+            content_blocks.append(tag.get_text(strip=True))
+    content = '\n\n'.join([t for t in content_blocks if t])
     return title, content, post_date
-
-
-# ─── STATE LOAD / SAVE ───────────────────────────────────────────────────
 
 def load_existing():
     cols = ['title', 'content', 'post_date', 'url', 'source']
@@ -129,38 +97,42 @@ def load_existing():
                     df[c] = ''
             return df[cols]
         except pd.errors.EmptyDataError:
-            pass
+            return pd.DataFrame(columns=cols)
     return pd.DataFrame(columns=cols)
-
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    existing = load_existing()
-    seen = set(existing['url'])
+    existing_df = load_existing()
+    seen_urls = set(existing_df['url'])
     new_records = []
-
-    for article_url in scrape_listing():
-        if article_url in seen:
-            continue
-        try:
-            title, content, date = scrape_article(article_url)
-            if title and content:
-                new_records.append({
-                    'title': title,
-                    'content': content,
-                    'post_date': date,
-                    'url': article_url,
-                    'source': SOURCE_NAME
-                })
-        except Exception as e:
-            print(f"Failed {article_url}: {e}")
-        time.sleep(1)
+    page = 1
+    while True:
+        urls = scrape_listing(page)
+        if not urls:
+            break
+        for url in urls:
+            if url in seen_urls:
+                continue
+            try:
+                title, content, post_date = scrape_article(url)
+                if title and content:
+                    new_records.append({
+                        'title': title,
+                        'content': content,
+                        'post_date': post_date,
+                        'url': url,
+                        'source': SOURCE_NAME
+                    })
+            except Exception as e:
+                print(f"Error scraping {url}: {e}")
+            time.sleep(1)
+        page += 1
 
     if new_records:
         df_new = pd.DataFrame(new_records)
-        out = pd.concat([existing, df_new], ignore_index=True)
-        out.to_csv(OUTPUT_FILE, index=False)
-        print(f"Added {len(new_records)} articles (total {len(out)})")
+        updated_df = pd.concat([existing_df, df_new], ignore_index=True)
+        updated_df.to_csv(OUTPUT_FILE, index=False)
+        print(f"Added {len(new_records)} new articles. Total now {len(updated_df)}.")
     else:
         print("No new articles found.")
 
