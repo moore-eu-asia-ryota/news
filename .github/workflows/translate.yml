@@ -1,5 +1,9 @@
 name: Translate and Summarize Articles
 
+# Grant workflow permissions to push to the repo
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
   push:
