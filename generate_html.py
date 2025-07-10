@@ -1,5 +1,8 @@
 import csv
 from datetime import datetime
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.text_rank import TextRankSummarizer
 
 header = """<!DOCTYPE html>
 <html>
@@ -12,7 +15,7 @@ header = """<!DOCTYPE html>
       margin: 0;
       padding: 20px;
       font-family: Arial, sans-serif;
-      padding-top: 100px;
+      padding-top: 140px;
     }
     .container {
       max-width: 840px;
@@ -20,7 +23,7 @@ header = """<!DOCTYPE html>
     }
     .controls {
       position: fixed;
-      top: 20px;
+      top: 60px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 1000;
@@ -94,6 +97,11 @@ header = """<!DOCTYPE html>
       width: 100%;
     }
     .card .summary {
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .card .full-content {
       display: none;
       line-height: 1.6;
       color: #333;
@@ -116,14 +124,6 @@ header = """<!DOCTYPE html>
       position: absolute;
       right: 30px;
       bottom: 30px;
-    }
-    .card .btn.trans {
-      right: 160px;
-      background: #034d66;
-    }
-    .translate-container {
-      margin-top: 20px;
-      min-height: 40px;
     }
   </style>
   <script type="text/javascript">
@@ -151,32 +151,14 @@ header = """<!DOCTYPE html>
       sortCards(sortAsc);
     }
 
-    function toggleSummary(id, btn) {
-      var s = document.getElementById(id);
-      if (s.style.display === 'block') {
-        s.style.display = 'none';
+    function toggleFullContent(idx, btn) {
+      var full = document.getElementById('full' + idx);
+      if (full.style.display === 'block') {
+        full.style.display = 'none';
         btn.innerText = 'Read full article';
       } else {
-        s.style.display = 'block';
-        btn.innerText = 'Hide summary';
-      }
-    }
-
-    function showTranslateWidget(btn, idx) {
-      var container = btn.parentElement.querySelector('.translate-container');
-      if (container.style.display === 'none' || container.style.display === '') {
-        container.style.display = 'block';
-        container.innerHTML = '<div id="google_translate_element' + idx + '"></div>';
-        new google.translate.TranslateElement({
-          pageLanguage: 'auto',
-          includedLanguages: 'en,ko,ja,zh,fr,de,es,ru',
-          layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-        }, 'google_translate_element' + idx);
-        btn.innerText = 'Hide Translate';
-      } else {
-        container.style.display = 'none';
-        container.innerHTML = '';
-        btn.innerText = 'Translate';
+        full.style.display = 'block';
+        btn.innerText = 'Hide full article';
       }
     }
 
@@ -188,10 +170,11 @@ header = """<!DOCTYPE html>
       document.querySelectorAll('.card').forEach(function(card){
         var t   = card.querySelector('h2').innerText.toLowerCase();
         var sum = card.querySelector('.summary').innerText.toLowerCase();
+        var full = card.querySelector('.full-content').innerText.toLowerCase();
         var dt  = card.querySelector('.date').innerText.trim().split('.');
         var y   = dt[2], m = dt[1];
         var so  = card.querySelector('.source a').innerText;
-        var ok = (t + ' ' + sum).includes(text)
+        var ok = (t + ' ' + sum + ' ' + full).includes(text)
               && (!year   || y   === year)
               && (!month  || m   === month)
               && (!src    || so  === src);
@@ -232,12 +215,20 @@ header = """<!DOCTYPE html>
       });
     };
   </script>
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <!-- Google Translate widget for entire page -->
   <script type="text/javascript">
-    function googleTranslateElementInit() {}
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'auto',
+        includedLanguages: 'en,ko,ja,zh,fr,de,es,ru',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
   </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
+  <div id="google_translate_element" style="position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2000;"></div>
   <button id="backToTop" title="Back to top">↑</button>
   <div class="container">
     <div class="controls">
@@ -271,26 +262,28 @@ def format_date(date_str):
     except Exception:
         return date_str
 
-def make_card(title, content, post_date, url, source, idx):
+def summarize_text(text, sentence_count=2):
+    parser = PlaintextParser.from_string(text, Tokenizer("english"))
+    summarizer = TextRankSummarizer()
+    summary = summarizer(parser.document, sentence_count)
+    return " ".join(str(sentence) for sentence in summary) if summary else text
+
+def make_card(title, summary, content, post_date, url, source, idx):
     post_date_fmt = format_date(post_date)
     return f'''
     <div class="card">
       <h2>{title}</h2>
       <p class="date">{post_date_fmt}</p>
       <hr/>
-      <p class="summary" id="summary{idx}">{content}</p>
+      <p class="summary" id="summary{idx}">{summary}</p>
+      <p class="full-content" id="full{idx}" style="display:none;">{content}</p>
       <p class="source">
         Source: <a href="{url}" target="_blank">{source}</a>
       </p>
       <button class="btn"
-        onclick="toggleSummary('summary{idx}', this)">
+        onclick="toggleFullContent({idx}, this)">
         Read full article
       </button>
-      <button class="btn trans"
-        onclick="showTranslateWidget(this, {idx})">
-        Translate
-      </button>
-      <div class="translate-container" style="display:none;"></div>
     </div>
     '''
 
@@ -299,8 +292,10 @@ def main():
         reader = csv.DictReader(f)
         cards = []
         for idx, row in enumerate(reader):
+            summary = summarize_text(row['content'])
             cards.append(make_card(
                 row['title'],
+                summary,
                 row['content'],
                 row['post_date'],
                 row['url'],
