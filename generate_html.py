@@ -1,9 +1,9 @@
 import csv
 from datetime import datetime
-import spacy
+from transformers import pipeline
 
-# Load spaCy English model
-nlp = spacy.load("en_core_web_sm")
+# Load summarization pipeline
+summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
 header = """<!DOCTYPE html>
 <html>
@@ -264,18 +264,15 @@ def format_date(date_str):
         return date_str
 
 def summarize_text(text, max_chars=200):
-    doc = nlp(text)
-    summary = ""
-    for sent in doc.sents:
-        next_len = len(summary) + len(sent.text.strip())
-        if next_len > max_chars:
-            break
-        summary += sent.text.strip() + " "
-    summary = summary.strip()
-    # Fallback: if summary is empty, use first max_chars of text
-    if not summary:
-        summary = text[:max_chars]
-    return summary
+    # HuggingFace BART expects at least 50 characters, max 1024
+    if not text or len(text.strip()) < 50:
+        return text[:max_chars]
+    try:
+        summary = summarizer(text, max_length=60, min_length=20, do_sample=False)[0]['summary_text']
+        # Truncate to 200 chars if needed
+        return summary[:max_chars]
+    except Exception:
+        return text[:max_chars]
 
 def make_card(title, summary, content, post_date, url, source, idx):
     post_date_fmt = format_date(post_date)
