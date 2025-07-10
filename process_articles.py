@@ -22,22 +22,33 @@ def gemini_translate(text, prompt):
     try:
         response = requests.post(API_URL, json=data, headers=headers)
         if response.status_code == 429:
-            # Rate limit hit, skip this entry
             return ""
         response.raise_for_status()
         return response.json()['candidates'][0]['content']['parts'][0]['text']
-    except Exception as e:
-        # For any other error, skip and leave blank
+    except Exception:
         return ""
 
 df = pd.read_csv('output/articles.csv')
 
-# Translate titles to English
-df['title ENG'] = df['title'].apply(lambda x: gemini_translate(
-    x, "please translate the content into English. Only give me the raw output, without your comments or other disturbing items."))
+# Ensure the columns exist
+if 'title ENG' not in df.columns:
+    df['title ENG'] = ""
+if 'Summary ENG' not in df.columns:
+    df['Summary ENG'] = ""
 
-# Translate and summarize content to English (~150 words)
-df['Summary ENG'] = df['content'].apply(lambda x: gemini_translate(
-    x, "please translate the content into English, and shorten it into roughly 150 words. Only give me the raw output, without your comments or other disturbing items."))
+# Only process rows where the output columns are empty or missing
+for idx, row in df.iterrows():
+    if not pd.isna(row['title']) and (pd.isna(row['title ENG']) or row['title ENG'] == ""):
+        df.at[idx, 'title ENG'] = gemini_translate(
+            row['title'],
+            "please translate the content into English. Only give me the raw output, without your comments or other disturbing items."
+        )
+        time.sleep(1)  # avoid rate limit
+    if not pd.isna(row['content']) and (pd.isna(row['Summary ENG']) or row['Summary ENG'] == ""):
+        df.at[idx, 'Summary ENG'] = gemini_translate(
+            row['content'],
+            "please translate the content into English, and shorten it into roughly 150 words. Only give me the raw output, without your comments or other disturbing items."
+        )
+        time.sleep(1)  # avoid rate limit
 
 df.to_csv('output/articles.csv', index=False)
