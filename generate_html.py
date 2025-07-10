@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime
+from deep_translator import GoogleTranslator
 
 header = """<!DOCTYPE html>
 <html>
@@ -99,6 +100,11 @@ header = """<!DOCTYPE html>
       color: #333;
       margin-bottom: 20px;
     }
+    .card .summary.translated {
+      display: none;
+      color: #1ea7fd;
+      margin-bottom: 20px;
+    }
     .card .source {
       font-size: 0.9em;
       font-weight: bold;
@@ -116,6 +122,10 @@ header = """<!DOCTYPE html>
       position: absolute;
       right: 30px;
       bottom: 30px;
+    }
+    .card .btn.trans {
+      right: 160px;
+      background: #034d66;
     }
   </style>
   <script>
@@ -154,6 +164,17 @@ header = """<!DOCTYPE html>
       }
     }
 
+    function toggleTranslated(id, btn) {
+      var s = document.getElementById(id);
+      if (s.style.display === 'block') {
+        s.style.display = 'none';
+        btn.innerText = 'Show English';
+      } else {
+        s.style.display = 'block';
+        btn.innerText = 'Hide English';
+      }
+    }
+
     function filterArticles() {
       var text  = document.getElementById('searchInput').value.toLowerCase();
       var year  = document.getElementById('yearFilter').value;
@@ -162,10 +183,11 @@ header = """<!DOCTYPE html>
       document.querySelectorAll('.card').forEach(function(card){
         var t   = card.querySelector('h2').innerText.toLowerCase();
         var sum = card.querySelector('.summary').innerText.toLowerCase();
+        var sum_en = card.querySelector('.summary.translated').innerText.toLowerCase();
         var dt  = card.querySelector('.date').innerText.trim().split('.');
         var y   = dt[2], m = dt[1];
         var so  = card.querySelector('.source a').innerText;
-        var ok = (t + ' ' + sum).includes(text)
+        var ok = (t + ' ' + sum + ' ' + sum_en).includes(text)
               && (!year   || y   === year)
               && (!month  || m   === month)
               && (!src    || so  === src);
@@ -235,22 +257,22 @@ footer = """
 """
 
 def format_date(date_str):
-    # Try to parse date in ISO or other formats, output as DD.MM.YYYY
     try:
         dt = datetime.fromisoformat(date_str)
         return dt.strftime("%d.%m.%Y")
     except Exception:
-        # fallback: just return as is
         return date_str
 
-def make_card(title, content, post_date, url, source, idx):
+def make_card(title, title_en, content, content_en, post_date, url, source, idx):
     post_date_fmt = format_date(post_date)
     return f'''
     <div class="card">
       <h2>{title}</h2>
+      <h2 style="color:#1ea7fd;font-size:1em;">{title_en}</h2>
       <p class="date">{post_date_fmt}</p>
       <hr/>
       <p class="summary" id="summary{idx}">{content}</p>
+      <p class="summary translated" id="summary_en{idx}">{content_en}</p>
       <p class="source">
         Source: <a href="{url}" target="_blank">{source}</a>
       </p>
@@ -258,26 +280,11 @@ def make_card(title, content, post_date, url, source, idx):
         onclick="toggleSummary('summary{idx}', this)">
         Read full article
       </button>
+      <button class="btn trans"
+        onclick="toggleTranslated('summary_en{idx}', this)">
+        Show English
+      </button>
     </div>
     '''
 
-def main():
-    with open('output/articles.csv', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        cards = []
-        for idx, row in enumerate(reader):
-            cards.append(make_card(
-                row['title'],
-                row['content'],
-                row['post_date'],
-                row['url'],
-                row['source'],
-                idx
-            ))
-    with open('output/articles.html', 'w', encoding='utf-8') as f:
-        f.write(header)
-        f.write('\n'.join(cards))
-        f.write(footer)
-
-if __name__ == "__main__":
-    main()
+def translate_text(text):
