@@ -20,7 +20,7 @@ def gemini_translate(text, prompt):
     response.raise_for_status()
     return response.json()['candidates'][0]['content']['parts'][0]['text']
 
-df = pd.read_csv('output/articles.csv', sep='\t')  # adjust sep if needed
+df = pd.read_csv('output/articles.csv')  # comma is default separator
 
 # Translate titles
 df['title ENG'] = df['title'].apply(lambda x: gemini_translate(
