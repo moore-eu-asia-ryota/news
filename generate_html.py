@@ -1,12 +1,9 @@
 import csv
 from datetime import datetime
-import nltk
+import spacy
 
-# Ensure punkt is available
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
+# Load spaCy English model
+nlp = spacy.load("en_core_web_sm")
 
 header = """<!DOCTYPE html>
 <html>
@@ -267,7 +264,8 @@ def format_date(date_str):
         return date_str
 
 def summarize_text(text, sentence_count=2):
-    sentences = nltk.sent_tokenize(text, language='english')
+    doc = nlp(text)
+    sentences = [sent.text.strip() for sent in doc.sents]
     return " ".join(sentences[:sentence_count]) if sentences else text
 
 def make_card(title, summary, content, post_date, url, source, idx):
