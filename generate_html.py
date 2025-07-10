@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 import nltk
 
-# Download punkt if not already present
+# Ensure punkt is available
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
@@ -267,7 +267,7 @@ def format_date(date_str):
         return date_str
 
 def summarize_text(text, sentence_count=2):
-    sentences = nltk.sent_tokenize(text)
+    sentences = nltk.sent_tokenize(text, language='english')
     return " ".join(sentences[:sentence_count]) if sentences else text
 
 def make_card(title, summary, content, post_date, url, source, idx):
