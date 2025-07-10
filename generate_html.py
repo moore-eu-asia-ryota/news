@@ -31,7 +31,19 @@ header = """<!DOCTYPE html>
     function parseDate(str) { var p = str.trim().split('.'); return new Date(p[2], p[1]-1, p[0]).getTime(); }
     function sortCards(asc) { var parent = document.querySelector('.container'); var cards  = Array.from(document.querySelectorAll('.card')); cards.sort(function(a,b){ var da = parseDate(a.querySelector('.date').innerText); var db = parseDate(b.querySelector('.date').innerText); return asc ? da - db : db - da; }); cards.forEach(function(c){ parent.appendChild(c); }); }
     function toggleSort(){ sortAsc = !sortAsc; document.getElementById('sortBtn').innerText = sortAsc ? '▲' : '▼'; sortCards(sortAsc); }
-    function toggleFullContent(idx, btn) { var full = document.getElementById('full' + idx); if (full.style.display === 'block') { full.style.display = 'none'; btn.innerText = 'Read full article'; } else { full.style.display = 'block'; btn.innerText = 'Hide full article'; } }
+    function toggleFullContent(idx, btn) {
+      var full = document.getElementById('full' + idx);
+      var preview = document.getElementById('summary' + idx);
+      if (full.style.display === 'block') {
+        full.style.display = 'none';
+        preview.style.display = 'block';
+        btn.innerText = 'Read full article';
+      } else {
+        full.style.display = 'block';
+        preview.style.display = 'none';
+        btn.innerText = 'Hide full article';
+      }
+    }
     function filterArticles() { var text  = document.getElementById('searchInput').value.toLowerCase(); var year  = document.getElementById('yearFilter').value; var month = document.getElementById('monthFilter').value; var src   = document.getElementById('sourceFilter').value; document.querySelectorAll('.card').forEach(function(card){ var t   = card.querySelector('h2').innerText.toLowerCase(); var sum = card.querySelector('.summary').innerText.toLowerCase(); var full = card.querySelector('.full-content').innerText.toLowerCase(); var dt  = card.querySelector('.date').innerText.trim().split('.'); var y   = dt[2], m = dt[1]; var so  = card.querySelector('.source a').innerText; var ok = (t + ' ' + sum + ' ' + full).includes(text) && (!year   || y   === year) && (!month  || m   === month) && (!src    || so  === src); card.style.display = ok ? '' : 'none'; }); }
     function populateFilters() { var years = new Set(), months = new Set(), sources = new Set(); document.querySelectorAll('.card').forEach(function(c){ var dt = c.querySelector('.date').innerText.trim().split('.'); years.add(dt[2]); months.add(dt[1]); sources.add(c.querySelector('.source a').innerText); }); Array.from(years).sort().forEach(y => document.getElementById('yearFilter').add(new Option(y, y))); Array.from(months).sort().forEach(m => document.getElementById('monthFilter').add(new Option(m, m))); Array.from(sources).sort().forEach(s => document.getElementById('sourceFilter').add(new Option(s, s))); }
     function handleScroll() { var btn = document.getElementById('backToTop'); btn.style.display = window.pageYOffset > 300 ? 'flex' : 'none'; }
@@ -75,12 +87,10 @@ def format_date(date_str):
         return date_str
 
 def summarize_text(text, max_words=200):
-    # HuggingFace BART expects at least 50 characters, max 1024
     if not text or len(text.strip()) < 50:
         return " ".join(text.split()[:max_words])
     try:
         summary = summarizer(text, max_length=200, min_length=100, do_sample=False)[0]['summary_text']
-        # Truncate to about 200 words
         words = summary.split()
         return " ".join(words[:max_words])
     except Exception:
