@@ -19,11 +19,17 @@ def gemini_translate(text, prompt):
             }
         ]
     }
-    response = requests.post(API_URL, json=data, headers=headers)
-    response.raise_for_status()
-    return response.json()['candidates'][0]['content']['parts'][0]['text']
+    try:
+        response = requests.post(API_URL, json=data, headers=headers)
+        if response.status_code == 429:
+            # Rate limit hit, skip this entry
+            return ""
+        response.raise_for_status()
+        return response.json()['candidates'][0]['content']['parts'][0]['text']
+    except Exception as e:
+        # For any other error, skip and leave blank
+        return ""
 
-# Read the CSV (comma-separated, with clean headers)
 df = pd.read_csv('output/articles.csv')
 
 # Translate titles to English
@@ -34,5 +40,4 @@ df['title ENG'] = df['title'].apply(lambda x: gemini_translate(
 df['Summary ENG'] = df['content'].apply(lambda x: gemini_translate(
     x, "please translate the content into English, and shorten it into roughly 150 words. Only give me the raw output, without your comments or other disturbing items."))
 
-# Save the updated CSV
 df.to_csv('output/articles.csv', index=False)
