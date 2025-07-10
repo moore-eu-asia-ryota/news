@@ -263,10 +263,19 @@ def format_date(date_str):
     except Exception:
         return date_str
 
-def summarize_text(text, sentence_count=2):
+def summarize_text(text, max_chars=200):
     doc = nlp(text)
-    sentences = [sent.text.strip() for sent in doc.sents]
-    return " ".join(sentences[:sentence_count]) if sentences else text
+    summary = ""
+    for sent in doc.sents:
+        next_len = len(summary) + len(sent.text.strip())
+        if next_len > max_chars:
+            break
+        summary += sent.text.strip() + " "
+    summary = summary.strip()
+    # Fallback: if summary is empty, use first max_chars of text
+    if not summary:
+        summary = text[:max_chars]
+    return summary
 
 def make_card(title, summary, content, post_date, url, source, idx):
     post_date_fmt = format_date(post_date)
@@ -292,7 +301,7 @@ def main():
         reader = csv.DictReader(f)
         cards = []
         for idx, row in enumerate(reader):
-            summary = summarize_text(row['content'])
+            summary = summarize_text(row['content'], max_chars=200)
             cards.append(make_card(
                 row['title'],
                 summary,
