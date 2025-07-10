@@ -6,7 +6,7 @@ import time
 
 BASE_URL = 'https://www.moore-bdr.sk/novinky/'
 OUTPUT_DIR = 'output'
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'BDRarticles.csv')
 
 # Browser-like headers
 HEADERS = {
