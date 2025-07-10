@@ -1,8 +1,12 @@
 import csv
 from datetime import datetime
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.text_rank import TextRankSummarizer
+import nltk
+
+# Download punkt if not already present
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
 
 header = """<!DOCTYPE html>
 <html>
@@ -263,10 +267,8 @@ def format_date(date_str):
         return date_str
 
 def summarize_text(text, sentence_count=2):
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer = TextRankSummarizer()
-    summary = summarizer(parser.document, sentence_count)
-    return " ".join(str(sentence) for sentence in summary) if summary else text
+    sentences = nltk.sent_tokenize(text)
+    return " ".join(sentences[:sentence_count]) if sentences else text
 
 def make_card(title, summary, content, post_date, url, source, idx):
     post_date_fmt = format_date(post_date)
