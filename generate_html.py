@@ -288,3 +288,34 @@ def make_card(title, title_en, content, content_en, post_date, url, source, idx)
     '''
 
 def translate_text(text):
+    if not text.strip():
+        return ""
+    try:
+        return GoogleTranslator(source='auto', target='en').translate(text)
+    except Exception:
+        return text
+
+def main():
+    with open('output/articles.csv', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        cards = []
+        for idx, row in enumerate(reader):
+            title_en = translate_text(row['title'])
+            content_en = translate_text(row['content'])
+            cards.append(make_card(
+                row['title'],
+                title_en,
+                row['content'],
+                content_en,
+                row['post_date'],
+                row['url'],
+                row['source'],
+                idx
+            ))
+    with open('output/articles.html', 'w', encoding='utf-8') as f:
+        f.write(header)
+        f.write('\n'.join(cards))
+        f.write(footer)
+
+if __name__ == "__main__":
+    main()
