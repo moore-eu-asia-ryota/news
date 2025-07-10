@@ -130,7 +130,7 @@ def main():
                 row['source'],
                 idx
             ))
-    with open('articles.html', 'w', encoding='utf-8') as f:
+    with open('index.html', 'w', encoding='utf-8') as f:
         f.write(header)
         f.write('\n'.join(cards))
         f.write(footer)
