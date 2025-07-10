@@ -74,25 +74,37 @@ def format_date(date_str):
     except Exception:
         return date_str
 
-def summarize_text(text, max_chars=200):
+def summarize_text(text, max_chars=200, max_words=None):
     # HuggingFace BART expects at least 50 characters, max 1024
     if not text or len(text.strip()) < 50:
         return text[:max_chars]
     try:
-        summary = summarizer(text, max_length=60, min_length=20, do_sample=False)[0]['summary_text']
-        return summary[:max_chars]
+        # For preview, use max_length=60 (about 200 chars)
+        # For full, use max_length=200 (about 200 words)
+        max_length = 60 if max_words is None else 200
+        min_length = 20 if max_words is None else 100
+        summary = summarizer(text, max_length=max_length, min_length=min_length, do_sample=False)[0]['summary_text']
+        if max_words is None:
+            return summary[:max_chars]
+        else:
+            # Truncate to about 200 words
+            words = summary.split()
+            return " ".join(words[:200])
     except Exception:
-        return text[:max_chars]
+        if max_words is None:
+            return text[:max_chars]
+        else:
+            return " ".join(text.split()[:200])
 
-def make_card(title, summary, content, post_date, url, source, idx):
+def make_card(title, preview, full_summary, post_date, url, source, idx):
     post_date_fmt = format_date(post_date)
     return f'''
     <div class="card">
       <h2>{title}</h2>
       <p class="date">{post_date_fmt}</p>
       <hr/>
-      <p class="summary" id="summary{idx}">{summary}</p>
-      <p class="full-content" id="full{idx}" style="display:none;">{content}</p>
+      <p class="summary" id="summary{idx}">{preview}</p>
+      <p class="full-content" id="full{idx}" style="display:none;">{full_summary}</p>
       <p class="source">
         Source: <a href="{url}" target="_blank">{source}</a>
       </p>
@@ -108,11 +120,12 @@ def main():
         reader = csv.DictReader(f)
         cards = []
         for idx, row in enumerate(reader):
-            summary = summarize_text(row['content'], max_chars=200)
+            preview = summarize_text(row['content'], max_chars=200)
+            full_summary = summarize_text(row['content'], max_words=200)
             cards.append(make_card(
                 row['title'],
-                summary,
-                row['content'],
+                preview,
+                full_summary,
                 row['post_date'],
                 row['url'],
                 row['source'],
