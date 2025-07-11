@@ -9,7 +9,6 @@ BASE_URL = 'https://www.moore-bdr.sk/novinky/'
 OUTPUT_DIR = 'output'
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'articles.csv')
 
-# Browser-like headers
 HEADERS = {
     'User-Agent': (
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -24,42 +23,47 @@ HEADERS = {
 
 session = requests.Session()
 session.headers.update(HEADERS)
-# Warm up session to get cookies
 session.get(BASE_URL)
 
 SOURCE_NAME = 'Moore BDR s.r.o.'
 
 def scrape_listing():
-    """Fetches all article URLs from the novinky main page."""
+    """Fetches all article URLs and their publication dates from the novinky main page."""
     resp = session.get(BASE_URL)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
-    links = []
-    # Article links are in h3 headings
-    for h3 in soup.find_all('h3'):
-        a = h3.find('a', href=True)
-        if a:
-            url = requests.compat.urljoin(BASE_URL, a['href'])
-            links.append(url)
+    articles = []
+    for article in soup.find_all('article'):
+        h3 = article.find('h3', class_='entry-title')
+        a = h3.find('a', href=True) if h3 else None
+        time_tag = article.find('time', class_='entry-date')
+        url = requests.compat.urljoin(BASE_URL, a['href']) if a else None
+        post_date = ''
+        if time_tag and time_tag.has_attr('datetime'):
+            dt_str = time_tag['datetime']
+            try:
+                dt = datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+                post_date = dt.strftime('%d.%m.%Y')
+            except Exception:
+                post_date = dt_str
+        if url:
+            articles.append((url, post_date))
     # Deduplicate while preserving order
-    return list(dict.fromkeys(links))
+    seen = set()
+    result = []
+    for url, post_date in articles:
+        if url not in seen:
+            result.append((url, post_date))
+            seen.add(url)
+    return result
 
 def scrape_article(url):
-    """Fetches title, content, and publication date from an individual article page."""
+    """Fetches title and content from an individual article page."""
     resp = session.get(url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
     title_tag = soup.find('h1')
     title = title_tag.get_text(strip=True) if title_tag else ''
-    post_date = ''
-    time_tag = soup.find('time')
-    if time_tag and time_tag.has_attr('datetime'):
-        dt_str = time_tag['datetime']
-        try:
-            dt = datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
-            post_date = dt.strftime('%d.%m.%Y')
-        except Exception:
-            post_date = dt_str  # fallback to raw string if parsing fails
     content_div = soup.select_one('div.entry-content')
     content_lines = []
     if content_div:
@@ -69,7 +73,7 @@ def scrape_article(url):
                 continue
             content_lines.append(text)
     content = '\n\n'.join(content_lines)
-    return title, content, post_date
+    return title, content
 
 def load_existing():
     cols = ['title', 'content', 'post_date', 'url', 'source']
@@ -90,12 +94,12 @@ def main():
     seen_urls = set(existing_df['url'])
     new_records = []
 
-    urls = scrape_listing()
-    for url in urls:
+    articles = scrape_listing()
+    for url, post_date in articles:
         if url in seen_urls:
             continue
         try:
-            title, content, post_date = scrape_article(url)
+            title, content = scrape_article(url)
             if title and content:
                 new_records.append({
                     'title': title,
