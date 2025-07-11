@@ -52,8 +52,8 @@ def scrape_article(url):
     title = title_tag.get_text(strip=True) if title_tag else ''
     post_date = ''
     time_tag = soup.find('time')
-    if time_tag and time_tag.has_attr('datetime'):
-        post_date = time_tag['datetime']
+    if time_tag:
+        post_date = time_tag.get_text(strip=True)
     content_div = soup.select_one('div.entry-content')
     content_lines = []
     if content_div:
