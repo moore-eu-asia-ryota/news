@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import os
 import time
+from datetime import datetime
 
 BASE_URL = 'https://www.moore-bdr.sk/novinky/'
 OUTPUT_DIR = 'output'
@@ -52,8 +53,13 @@ def scrape_article(url):
     title = title_tag.get_text(strip=True) if title_tag else ''
     post_date = ''
     time_tag = soup.find('time')
-    if time_tag:
-        post_date = time_tag.get_text(strip=True)
+    if time_tag and time_tag.has_attr('datetime'):
+        dt_str = time_tag['datetime']
+        try:
+            dt = datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+            post_date = dt.strftime('%d.%m.%Y')
+        except Exception:
+            post_date = dt_str  # fallback to raw string if parsing fails
     content_div = soup.select_one('div.entry-content')
     content_lines = []
     if content_div:
