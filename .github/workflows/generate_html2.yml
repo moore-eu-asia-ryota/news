@@ -27,7 +27,7 @@ jobs:
           pip install transformers torch
 
       - name: Generate HTML from CSV
-        run: python generate_html.py
+        run: python generate_html2.py
 
       - name: Commit and push HTML
         run: |
