@@ -1,0 +1,42 @@
+name: Generate Articles HTML
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 4 */3 * *'  # every 3 days at midnight UTC
+
+jobs:
+  build-html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Transformers and Torch
+        run: |
+          pip install transformers torch
+
+      - name: Generate HTML from CSV
+        run: python generate_html.py
+
+      - name: Commit and push HTML
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git stash
+          git pull --rebase origin main
+          git stash pop || true
+          git add index.html
+          git commit -m "Auto-generate articles.html from articles.csv" || echo "No changes to commit"
+          git push origin main
