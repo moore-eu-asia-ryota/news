@@ -22,12 +22,8 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Transformers and Torch
-        run: |
-          pip install transformers torch
-
       - name: Generate HTML from CSV
-        run: python generate_html2.py
+        run: python .github/scripts/update_and_translate.py
 
       - name: Commit and push HTML
         run: |
@@ -38,5 +34,5 @@ jobs:
           git pull --rebase origin main
           git stash pop || true
           git add index.html
-          git commit -m "Auto-generate articles.html from articles.csv" || echo "No changes to commit"
+          git commit -m "Auto-generate articles.html from final.csv" || echo "No changes to commit"
           git push origin main
