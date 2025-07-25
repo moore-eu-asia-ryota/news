@@ -54,25 +54,24 @@ def main():
         if col not in new_rows.columns:
             new_rows[col] = ""
 
-    # Translate missing title_eng/content_eng
-    for idx, row in new_rows.iterrows():
-        # Translate title if missing
-        if not row.get("title_eng"):
+    # Append new rows to final
+    final = pd.concat([final, new_rows], ignore_index=True)
+
+    # Fill all empty title_eng and content_eng cells in final
+    for idx, row in final.iterrows():
+        # Fill title_eng if empty
+        if (not row.get("title_eng")) and row.get("title"):
             prompt = "translate this tilte into English. Most importantly, only provide the pure final text as your answer, without any of your comments or unnecessary elements."
             result = gemini_translate(prompt, row["title"])
             if result is not None:
-                new_rows.at[idx, "title_eng"] = result
-            # If rate limit or error, skip and leave cell empty
-        # Translate content if missing
-        if not row.get("content_eng"):
+                final.at[idx, "title_eng"] = result
+        # Fill content_eng if empty
+        if (not row.get("content_eng")) and row.get("content"):
             prompt = "translate this content into English. And then summarize the translated content into 200 words short. Most importantly, only provide the pure final text as your answer, without any of your comments or unnecessary elements."
             result = gemini_translate(prompt, row["content"])
             if result is not None:
-                new_rows.at[idx, "content_eng"] = result
-            # If rate limit or error, skip and leave cell empty
+                final.at[idx, "content_eng"] = result
 
-    # Append new rows to final
-    final = pd.concat([final, new_rows], ignore_index=True)
     # Save final.csv
     final.to_csv(FINAL_PATH, index=False)
 
