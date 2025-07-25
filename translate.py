@@ -5,7 +5,7 @@ import requests
 ARTICLES_PATH = "output/articles.csv"
 FINAL_PATH = "output/final.csv"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent"
 
 def gemini_translate(prompt, text):
     headers = {
