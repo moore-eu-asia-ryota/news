@@ -49,16 +49,28 @@ def format_date(date_str):
     except Exception:
         return date_str
 
+def add_line_breaks(text):
+    # Replace double newlines or single newlines with <br> for HTML
+    if not text:
+        return ''
+    # Replace two or more newlines with <br><br>, single newline with <br>
+    import re
+    text = re.sub(r'\r?\n\r?\n+', '<br><br>', text)
+    text = re.sub(r'\r?\n', '<br>', text)
+    return text
+
 def make_card(title, content, post_date, url, source, idx):
     post_date_fmt = format_date(post_date)
     preview = content[:200]
+    content_html = add_line_breaks(content)
+    preview_html = add_line_breaks(preview)
     return f'''
     <div class="card">
       <h2>{title}</h2>
       <p class="date">{post_date_fmt}</p>
       <hr/>
-      <p class="summary" id="summary{idx}">{preview}</p>
-      <p class="full-content" id="full{idx}" style="display:none;">{content}</p>
+      <p class="summary" id="summary{idx}">{preview_html}</p>
+      <p class="full-content" id="full{idx}" style="display:none;">{content_html}</p>
       <p class="source">
         Source: <a href="{url}" target="_blank">{source}</a>
       </p>
