@@ -25,7 +25,7 @@ jobs:
 
       - name: Run update and translation script
         env:
-          GEMINI_API_KEY: AIzaSyAG4k4HzmM-BO2C-coR-BuuXYauI_hJRM0
+          GEMINI_API_KEY: AIzaSyBUC0o5fBFNHzF5RhrACHZUqQ972VLRsNw
         run: python translate.py
 
       - name: Commit and push changes
