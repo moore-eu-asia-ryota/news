@@ -155,7 +155,7 @@ def make_card(row, idx):
     '''
 
 def main():
-    with open('output/final.csv', encoding='utf-8') as f:
+    with open('index.html', 'w', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         cards = []
         for idx, row in enumerate(reader):
