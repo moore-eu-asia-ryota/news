@@ -41,8 +41,8 @@ header = """<!DOCTYPE html>
         btn.innerText = 'Hide full article';
       }
     }
-    function filterArticles() { var text  = document.getElementById('searchInput').value.toLowerCase(); var year  = document.getElementById('yearFilter').value; var month = document.getElementById('monthFilter').value; var src   = document.getElementById('sourceFilter').value; document.querySelectorAll('.card').forEach(function(card){ var t   = card.querySelector('h2').innerText.toLowerCase(); var sum = card.querySelector('.summary').innerText.toLowerCase(); var full = card.querySelector('.full-content').innerText.toLowerCase(); var dt  = card.querySelector('.date').innerText.trim().split('.'); var y   = dt[2], m = dt[1]; var so  = card.querySelector('.source a').innerText; var ok = (t + ' ' + sum + ' ' + full).includes(text) && (!year   || y   === year) && (!month  || m   === month) && (!src    || so  === src); card.style.display = ok ? '' : 'none'; }); }
-    function populateFilters() { var years = new Set(), months = new Set(), sources = new Set(); document.querySelectorAll('.card').forEach(function(c){ var dt = c.querySelector('.date').innerText.trim().split('.'); years.add(dt[2]); months.add(dt[1]); sources.add(c.querySelector('.source a').innerText); }); Array.from(years).sort().forEach(y => document.getElementById('yearFilter').add(new Option(y, y))); Array.from(months).sort().forEach(m => document.getElementById('monthFilter').add(new Option(m, m))); Array.from(sources).sort().forEach(s => document.getElementById('sourceFilter').add(new Option(s, s))); }
+    function filterArticles() { var text  = document.getElementById('searchInput').value.toLowerCase(); var year  = document.getElementById('yearFilter').value; var src   = document.getElementById('sourceFilter').value; document.querySelectorAll('.card').forEach(function(card){ var t   = card.querySelector('h2').innerText.toLowerCase(); var sum = card.querySelector('.summary').innerText.toLowerCase(); var full = card.querySelector('.full-content').innerText.toLowerCase(); var dt  = card.querySelector('.date').innerText.trim().split('.'); var y   = dt[2]; var so  = card.querySelector('.source a').innerText; var ok = (t + ' ' + sum + ' ' + full).includes(text) && (!year   || y   === year) && (!src    || so  === src); card.style.display = ok ? '' : 'none'; }); }
+    function populateFilters() { var years = new Set(), sources = new Set(); document.querySelectorAll('.card').forEach(function(c){ var dt = c.querySelector('.date').innerText.trim().split('.'); years.add(dt[2]); sources.add(c.querySelector('.source a').innerText); }); Array.from(years).sort().forEach(y => document.getElementById('yearFilter').add(new Option(y, y))); Array.from(sources).sort().forEach(s => document.getElementById('sourceFilter').add(new Option(s, s))); }
     function handleScroll() { var btn = document.getElementById('backToTop'); btn.style.display = window.pageYOffset > 300 ? 'flex' : 'none'; }
     function changeLanguage() {
       var lang = document.getElementById('langSelect').value;
@@ -82,7 +82,6 @@ header = """<!DOCTYPE html>
     <div class="controls">
       <input id="searchInput" type="text" placeholder="Search articles..." onkeyup="filterArticles()" />
       <select id="yearFilter" onchange="filterArticles()"><option value="">All years</option></select>
-      <select id="monthFilter" onchange="filterArticles()"><option value="">All months</option></select>
       <select id="sourceFilter" onchange="filterArticles()"><option value="">All sources</option></select>
       <select id="langSelect">
         <option value="eng">English</option>
@@ -131,7 +130,7 @@ def make_card(row, idx):
         preview_html = add_line_breaks(preview)
         display = '' if lang == 'eng' else 'none'
         summary_html.append(f'<p class="summary" id="summary_{lang}_{idx}" style="display:{display};">{preview_html}</p>')
-    # Full content (hidden by default, can be extended for toggling)
+    # Full content (hidden by default, toggled by button)
     full_html = []
     for lang in ['eng', 'jp', 'cn', 'kr']:
         content = row.get(f'content_{lang}', '')
@@ -155,9 +154,15 @@ def make_card(row, idx):
     '''
 
 def main():
-    with open('index.html', 'w', encoding='utf-8') as f:
+    with open('output/final.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         cards = []
         for idx, row in enumerate(reader):
             cards.append(make_card(row, idx))
-    with open('index.html', 'w', encoding=
+    with open('index.html', 'w', encoding='utf-8') as f:
+        f.write(header)
+        f.write('\n'.join(cards))
+        f.write(footer)
+
+if __name__ == "__main__":
+    main()
