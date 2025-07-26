@@ -29,8 +29,8 @@ header = """<!DOCTYPE html>
     function sortCards(asc) { var parent = document.querySelector('.container'); var cards  = Array.from(document.querySelectorAll('.card')); cards.sort(function(a,b){ var da = parseDate(a.querySelector('.date').innerText); var db = parseDate(b.querySelector('.date').innerText); return asc ? da - db : db - da; }); cards.forEach(function(c){ parent.appendChild(c); }); }
     function toggleSort(){ sortAsc = !sortAsc; document.getElementById('sortBtn').innerText = sortAsc ? '▲' : '▼'; sortCards(sortAsc); }
     function toggleFullContent(idx, btn) {
-      var full = document.getElementById('full' + idx);
-      var preview = document.getElementById('summary' + idx);
+      var full = document.getElementById('full_' + currentLang + '_' + idx);
+      var preview = document.getElementById('summary_' + currentLang + '_' + idx);
       if (full.style.display === 'block') {
         full.style.display = 'none';
         preview.style.display = 'block';
@@ -117,29 +117,33 @@ def add_line_breaks(text):
 
 def make_card(row, idx):
     post_date_fmt = format_date(row['post_date'])
-    cards = []
     # Titles
+    title_html = []
     for lang in ['eng', 'jp', 'cn', 'kr']:
         title = row.get(f'title_{lang}', '')
         display = '' if lang == 'eng' else 'none'
-        cards.append(f'<h2 id="title_{lang}_{idx}" style="display:{display};">{title}</h2>')
+        title_html.append(f'<h2 id="title_{lang}_{idx}" style="display:{display};">{title}</h2>')
     # Summaries
+    summary_html = []
     for lang in ['eng', 'jp', 'cn', 'kr']:
         content = row.get(f'content_{lang}', '')
         preview = content[:200]
         preview_html = add_line_breaks(preview)
         display = '' if lang == 'eng' else 'none'
-        cards.append(f'<p class="summary" id="summary_{lang}_{idx}" style="display:{display};">{preview_html}</p>')
+        summary_html.append(f'<p class="summary" id="summary_{lang}_{idx}" style="display:{display};">{preview_html}</p>')
     # Full content (hidden by default, can be extended for toggling)
+    full_html = []
     for lang in ['eng', 'jp', 'cn', 'kr']:
         content = row.get(f'content_{lang}', '')
         content_html = add_line_breaks(content)
-        cards.append(f'<p class="full-content" id="full_{lang}_{idx}" style="display:none;">{content_html}</p>')
+        full_html.append(f'<p class="full-content" id="full_{lang}_{idx}" style="display:none;">{content_html}</p>')
     return f'''
     <div class="card" data-idx="{idx}">
-      {''.join(cards)}
+      {''.join(title_html)}
       <p class="date">{post_date_fmt}</p>
       <hr/>
+      {''.join(summary_html)}
+      {''.join(full_html)}
       <p class="source">
         Source: <a href="{row['url']}" target="_blank">{row['source']}</a>
       </p>
@@ -156,10 +160,4 @@ def main():
         cards = []
         for idx, row in enumerate(reader):
             cards.append(make_card(row, idx))
-    with open('index.html', 'w', encoding='utf-8') as f:
-        f.write(header)
-        f.write('\n'.join(cards))
-        f.write(footer)
-
-if __name__ == "__main__":
-    main()
+    with open('index.html', 'w', encoding=
